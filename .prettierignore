@@ -1,0 +1,4 @@
+.prettierrc
+.env.local
+.env
+*.log
