@@ -1,7 +1,7 @@
 # Google OAuth Setup Guide
 
 ## Overview
-CaptionFlow now supports Sign in with Google. This guide walks you through setting up Google OAuth in your Supabase project.
+CaptionFlow supports Sign in with Google. This guide walks you through setting up Google OAuth in your Supabase project.
 
 ## Steps to Configure
 
@@ -16,7 +16,7 @@ CaptionFlow now supports Sign in with Google. This guide walks you through setti
 4. Set the following:
    - **Client ID**: (from Google Cloud Console)
    - **Secret**: (from Google Cloud Console)
-   - **Redirect URL**: https://sllxedwmfnhzkqfpccya.supabase.co/auth/v1/callback
+   - **Redirect URL**: https://qkgcdcxnmwdvaeibxrbu.supabase.co/auth/v1/callback
 
 ### 3. Get Google OAuth Credentials
 
@@ -34,7 +34,7 @@ CaptionFlow now supports Sign in with Google. This guide walks you through setti
      - http://localhost:3000 (for development)
      - https://cf.pawelrzepecki.com (for production)
    - **Authorized redirect URIs**:
-     -   
+     - https://qkgcdcxnmwdvaeibxrbu.supabase.co/auth/v1/callback
 
 4. Click **Create**
 5. Copy the **Client ID** and **Client Secret**
@@ -62,7 +62,7 @@ CaptionFlow now supports Sign in with Google. This guide walks you through setti
 3. User authenticates with Google
 4. Google redirects back to Supabase callback URL
 5. Supabase creates/updates user session
-6. Our `/auth/callback` page receives the session
+6. Our `/api/auth/callback` route receives the session
 7. If new user: Creates record in `users` table
 8. Redirects to `/caption-generator`
 
@@ -76,10 +76,11 @@ CaptionFlow now supports Sign in with Google. This guide walks you through setti
 - Ensure the Supabase callback URL is in Google's Authorized redirect URIs
 - Format: https://[project-ref].supabase.co/auth/v1/callback
 
-### User not created in database
-- Check that the `users` table exists in Supabase
-- Verify RLS policies allow inserts
-- Check browser console for errors
+### "User not found" error when creating captions
+- This happens if the user record wasn't created in the database
+- The `/api/auth/callback` route should automatically create the user
+- Check browser console and Vercel logs for errors
+- Make sure the `users` table exists in Supabase
 
 ### CORS errors
 - Make sure your domain is in Google's Authorized JavaScript origins
