@@ -49,46 +49,55 @@ export function Navigation() {
   ] : [];
 
   return (
-    <nav className="border-b bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+    <nav className="sticky top-0 z-50 glass h-16 transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+        <div className="flex justify-between items-center h-full">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href={user ? '/caption-generator' : '/'} className="flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-blue-600" />
-              <span className="text-xl font-bold">CaptionFlow</span>
+            <Link href={user ? '/caption-generator' : '/'} className="flex items-center gap-2 group">
+              <div className="p-1.5 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                <Sparkles className="w-5 h-5 text-primary" />
+              </div>
+              <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+                CaptionFlow
+              </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-4">
-            {navLinks.map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname === link.href
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="hidden md:flex items-center gap-6">
+            <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-full border border-black/5 dark:border-white/5">
+              {navLinks.map(link => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${pathname === link.href
+                    ? 'text-primary bg-white dark:bg-zinc-800 shadow-sm border border-black/5'
+                    : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="h-6 w-px bg-border mx-2" />
 
             {isLoading ? (
-              <div className="w-20 h-8 bg-gray-200 rounded animate-pulse" />
+              <div className="w-20 h-9 bg-muted rounded-lg animate-pulse" />
             ) : user ? (
-              <Button variant="outline" onClick={handleLogout}>
+              <Button variant="outline" size="sm" onClick={handleLogout} className="rounded-lg">
                 Sign Out
               </Button>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Link href="/login">
-                  <Button variant="ghost">Sign In</Button>
+                  <Button variant="ghost" size="sm" className="font-medium">Sign In</Button>
                 </Link>
                 <Link href="/register">
-                  <Button>Get Started</Button>
+                  <Button size="sm" className="font-bold shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90">
+                    Get Started
+                  </Button>
                 </Link>
               </div>
             )}
@@ -98,7 +107,7 @@ export function Navigation() {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
+              className="p-2 rounded-lg text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -107,36 +116,37 @@ export function Navigation() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t">
+          <div className="md:hidden absolute top-16 left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border p-4 animate-in fade-in slide-in-from-top-2">
             <div className="flex flex-col gap-2">
               {navLinks.map(link => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    pathname === link.href
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
+                  className={`px-4 py-3 rounded-xl text-base font-medium transition-colors ${pathname === link.href
+                    ? 'text-primary bg-primary/10'
+                    : 'text-muted-foreground hover:bg-muted'
+                    }`}
                 >
                   {link.label}
                 </Link>
               ))}
 
               {!isLoading && user && (
-                <Button variant="outline" onClick={handleLogout} className="mt-2">
+                <Button variant="outline" onClick={handleLogout} className="mt-4 w-full h-11">
                   Sign Out
                 </Button>
               )}
 
               {!isLoading && !user && (
-                <div className="flex flex-col gap-2 mt-2">
+                <div className="flex flex-col gap-3 mt-4">
                   <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button variant="outline" className="w-full">Sign In</Button>
+                    <Button variant="outline" className="w-full h-11">Sign In</Button>
                   </Link>
                   <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button className="w-full">Get Started</Button>
+                    <Button className="w-full h-11 font-bold bg-primary shadow-lg shadow-primary/20">
+                      Get Started
+                    </Button>
                   </Link>
                 </div>
               )}

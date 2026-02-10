@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-import { Loader2, Save, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, Save, CheckCircle, AlertCircle, Zap } from 'lucide-react';
 
 const TONES = [
   { value: 'casual', label: '😎 Casual' },
@@ -85,7 +85,7 @@ export default function BrandVoicePage() {
 
   const saveBrandVoice = async () => {
     const filledExamples = examples.filter(ex => ex.trim().length > 0);
-    
+
     if (filledExamples.length === 0) {
       setError('Please provide at least one example caption');
       return;
@@ -129,128 +129,147 @@ export default function BrandVoicePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Brand Voice Training</h1>
-        <p className="text-gray-600">
-          Train the AI to write captions that match your unique style
+    <div className="max-w-4xl mx-auto px-4 py-12 lg:py-20">
+      <div className="mb-12 space-y-4">
+        <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-bold tracking-tight">
+          <Zap className="w-4 h-4" />
+          Neural Training
+        </div>
+        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">Brand Voice DNA</h1>
+        <p className="text-lg text-zinc-500 max-w-2xl leading-relaxed">
+          Train the AI to capture your unique rhythm, vocabulary, and emotional resonance.
         </p>
       </div>
 
       {!hasPro && (
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-          <p className="text-sm text-amber-800">
-            Brand voice training requires a Pro subscription.{' '}
-            <a href="/pricing" className="underline font-medium">
-              Upgrade to Pro
-            </a>
-          </p>
+        <div className="mb-8 p-6 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 shadow-xl shadow-amber-500/5 rounded-3xl flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shrink-0">
+            <AlertCircle className="w-6 h-6 text-amber-600" />
+          </div>
+          <div className="space-y-1">
+            <p className="font-bold text-amber-900 dark:text-amber-200 text-lg">Pro Feature Locked</p>
+            <p className="text-amber-700 dark:text-amber-400">
+              Brand DNA mapping requires a Pro subscription.{' '}
+              <a href="/pricing" className="underline font-bold decoration-2 underline-offset-4">
+                Upgrade to Pro
+              </a>
+            </p>
+          </div>
         </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            📝 Example Captions
+      <Card className="rounded-[2.5rem] border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden">
+        <CardHeader className="p-10 pb-0 space-y-2">
+          <CardTitle className="text-2xl flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Save className="w-5 h-5 text-primary" />
+            </div>
+            Training Repository
           </CardTitle>
-          <CardDescription>
-            Paste 3-5 of your best-performing captions. The AI will analyze your
-            writing style, vocabulary, tone, and patterns.
+          <CardDescription className="text-base text-zinc-500">
+            Paste 3-5 of your most successful captions below. The AI will deconstruct <br className="hidden md:block" />
+            your writing &apos;DNA&apos; to provide authentically formatted results.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="p-10 space-y-10">
           {/* Example Inputs */}
-          <div className="grid gap-4">
+          <div className="grid gap-6">
             {[0, 1, 2, 3, 4].map(index => (
-              <div key={index}>
-                <label className="block text-sm font-medium mb-2">
-                  Example {index + 1} {index < 3 && <span className="text-red-500">*</span>}
+              <div key={index} className="space-y-3">
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-[0.2em] flex items-center justify-between px-1">
+                  <span>Training Sample {index + 1}</span>
+                  {index < 3 && <span className="text-primary text-[10px] font-bold">Required Hook</span>}
                 </label>
                 <Textarea
                   value={examples[index]}
                   onChange={e => updateExample(index, e.target.value)}
-                  placeholder={`Paste one of your best captions here...`}
-                  rows={2}
-                  className="resize-none"
+                  placeholder={`Paste a sample caption here...`}
+                  className="min-h-[100px] resize-none rounded-2xl border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 focus:ring-primary/20 focus:border-primary transition-all p-5 text-base"
                   disabled={!hasPro}
                 />
               </div>
             ))}
           </div>
 
+          <div className="h-px bg-zinc-100 dark:bg-zinc-800" />
+
           {/* Tone Selection */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Preferred Tone
+          <div className="space-y-3">
+            <label className="text-xs font-bold text-zinc-400 uppercase tracking-[0.2em] px-1">
+              Global Tone Bias
             </label>
             <Select
               value={selectedTone}
               onValueChange={setSelectedTone}
               disabled={!hasPro}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-16 rounded-2xl border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-6 font-bold text-lg">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-2xl border-zinc-200 dark:border-zinc-800 p-2 shadow-2xl">
                 {TONES.map(t => (
-                  <SelectItem key={t.value} value={t.value}>
-                    {t.label}
+                  <SelectItem key={t.value} value={t.value} className="rounded-xl py-4 focus:bg-primary/5 transition-colors cursor-pointer">
+                    <span className="font-bold text-lg">{t.label}</span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Status */}
-          {savedVoice && (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-                <span className="font-medium text-green-900">
-                  Brand Voice Active
-                </span>
+          {/* Status Display Area */}
+          <div className="space-y-4">
+            {savedVoice && (
+              <div className="p-6 bg-primary/[0.03] border border-primary/20 rounded-3xl animate-in zoom-in-95 duration-500">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
+                    <CheckCircle className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-primary">Brand DNA Map Active</p>
+                    <p className="text-sm text-zinc-400">
+                      Synchronized on {new Date(savedVoice.updated_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <p className="text-sm text-green-700">
-                Last updated: {new Date(savedVoice.updated_at).toLocaleDateString()}
-              </p>
-            </div>
-          )}
-
-          {/* Error */}
-          {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Success */}
-          {success && (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" />
-              Brand voice saved successfully!
-            </div>
-          )}
-
-          {/* Save Button */}
-          <Button
-            onClick={saveBrandVoice}
-            disabled={isSaving || !hasPro}
-            className="w-full"
-            size="lg"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-5 w-5" />
-                Save Brand Voice
-              </>
             )}
-          </Button>
+
+            {error && (
+              <div className="p-6 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/50 rounded-3xl text-red-600 dark:text-red-400 font-medium flex gap-3">
+                <AlertCircle className="w-5 h-5 shrink-0" />
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="p-6 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded-3xl text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-3">
+                <CheckCircle className="w-5 h-5" />
+                Neural mapping complete. Your voice is saved.
+              </div>
+            )}
+          </div>
+
+          {/* Save Action */}
+          <div className="pt-4">
+            <Button
+              onClick={saveBrandVoice}
+              disabled={isSaving || !hasPro}
+              className="w-full h-16 rounded-2xl text-xl font-bold bg-primary shadow-2xl shadow-primary/25 hover:scale-[1.01] transition-all active:scale-[0.99]"
+              size="lg"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-3 h-6 w-6 animate-spin" />
+                  Processing DNA...
+                </>
+              ) : (
+                <>
+                  <Zap className="mr-3 h-6 w-6" />
+                  Save Brand Voice
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
