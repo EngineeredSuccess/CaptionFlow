@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createClient as createServerClient } from '@/shared/lib/supabase/server';
 import { createServiceRoleClient } from '@/shared/lib/supabase/service-role';
 
 export async function GET(request: Request) {
@@ -8,7 +9,8 @@ export async function GET(request: Request) {
   console.log('Auth callback hit. Code exists:', !!code);
 
   if (code) {
-    const supabase = createServiceRoleClient();
+    // Use server client to exchange code AND set session cookies
+    const supabase = await createServerClient();
     
     try {
       // Exchange the code for a session
@@ -22,8 +24,11 @@ export async function GET(request: Request) {
       console.log('User from auth:', user?.id, user?.email);
 
       if (user) {
+        // Use service role client for database operations
+        const serviceRoleClient = createServiceRoleClient();
+        
         // Check if user exists in our database
-        const { data: existingUser, error: queryError } = await supabase
+        const { data: existingUser, error: queryError } = await serviceRoleClient
           .from('users')
           .select('id')
           .eq('id', user.id)
@@ -35,7 +40,7 @@ export async function GET(request: Request) {
         if (queryError || !existingUser) {
           console.log('Creating new user in database...');
           
-          const { error: insertError } = await supabase.from('users').insert({
+          const { error: insertError } = await serviceRoleClient.from('users').insert({
             id: user.id,
             email: user.email,
             subscription_tier: 'free',
