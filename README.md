@@ -69,6 +69,45 @@ captionflow/
 - `npm run format` - Format code with Prettier
 - `npm run format:check` - Check code formatting
 
+## 🚀 Deployment
+
+### Deploy to Vercel (Recommended)
+
+**GitHub Repository**: https://github.com/EngineeredSuccess/CaptionFlow
+
+**One-Click Deploy**:
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/EngineeredSuccess/CaptionFlow)
+
+**Manual Deployment**:
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Login and deploy
+vercel login
+vercel --prod
+```
+
+### Domain Configuration
+
+Your site is configured for: **https://cf.pawelrzepecki.com**
+
+1. Deploy to Vercel
+2. Add custom domain in Vercel Dashboard: `cf.pawelrzepecki.com`
+3. In Squarespace DNS, add CNAME:
+   - Host: `cf`
+   - Points to: `cname.vercel-dns.com`
+
+### Stripe Webhook Setup
+
+**Webhook URL**: `https://cf.pawelrzepecki.com/api/stripe-webhook`
+
+Events to listen for:
+- `checkout.session.completed`
+- `customer.subscription.deleted`
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed setup instructions.
+
 ## License
 
 MIT
