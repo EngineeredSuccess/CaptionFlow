@@ -16,7 +16,7 @@ CaptionFlow now supports Sign in with Google. This guide walks you through setti
 4. Set the following:
    - **Client ID**: (from Google Cloud Console)
    - **Secret**: (from Google Cloud Console)
-   - **Redirect URL**: https://qkgcdcxnmwdvaeibxrbu.supabase.co/auth/v1/callback
+   - **Redirect URL**: https://sllxedwmfnhzkqfpccya.supabase.co/auth/v1/callback
 
 ### 3. Get Google OAuth Credentials
 
@@ -34,7 +34,7 @@ CaptionFlow now supports Sign in with Google. This guide walks you through setti
      - http://localhost:3000 (for development)
      - https://cf.pawelrzepecki.com (for production)
    - **Authorized redirect URIs**:
-     - https://qkgcdcxnmwdvaeibxrbu.supabase.co/auth/v1/callback
+     -   
 
 4. Click **Create**
 5. Copy the **Client ID** and **Client Secret**

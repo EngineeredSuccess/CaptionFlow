@@ -14,7 +14,24 @@
 
 ## ⚙️ Environment Variables
 
-Add these environment variables in Vercel Dashboard:
+### How to Add Environment Variables in Vercel
+
+1. Go to your project in [Vercel Dashboard](https://vercel.com/dashboard)
+2. Click on **Settings** tab
+3. Click on **Environment Variables** in the left sidebar
+4. Add each variable one by one:
+   - **Name**: The variable name (e.g., `NEXT_PUBLIC_SUPABASE_URL`)
+   - **Value**: The actual value
+   - **Environment**: Select all (Production, Preview, Development)
+   - Click **Add**
+5. Repeat for all variables below
+
+**Important**: After adding all variables, you need to redeploy:
+- Go to **Deployments** tab
+- Click the **...** menu on your latest deployment
+- Click **Redeploy**
+
+### Required Environment Variables
 
 ### Supabase
 - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
@@ -47,6 +64,17 @@ Add these environment variables in Vercel Dashboard:
 - `FREE_DAILY_LIMIT` - 10
 - `BETA_ENABLED` - true
 - `MAX_BETA_USERS` - 100
+
+### Getting Your Values
+
+Copy the values from your local `.env.local` file (located in your captionflow folder).
+
+If you don't have them handy, here are the locations:
+- Supabase values: https://supabase.com/dashboard/project/qkgcdcxnmwdvaeibxrbu/settings/api
+- OpenAI key: https://platform.openai.com/api-keys
+- Stripe keys: https://dashboard.stripe.com/test/apikeys
+- Resend key: https://resend.com/api-keys
+- Upstash Redis: https://console.upstash.com/redis
 
 ## 🔧 Stripe Webhook Configuration
 
