@@ -37,31 +37,114 @@
 
 ---
 
-### Stage 2: Staging Environment
-**Branch**: `main`
+### Stage 2: Staging Environment Options
 
-**Triggers**: Merge to main, push to main
+You have **two free options** for staging - choose based on your needs:
 
-**Actions**:
+#### Option A: Vercel Preview Deployments (Recommended for MVP)
+**Best for**: Early stage, solo development, quick testing
+
+**How it works**:
+- Every Pull Request gets a unique preview URL automatically
+- URLs look like: `captionflow-git-feature-xyz.vercel.app`
+- No additional domains or DNS setup needed
+- Vercel handles everything
+
+**Pros**:
+- ✅ Completely free
+- ✅ Zero setup required
+- ✅ Automatic for every PR
+- ✅ Isolated environments per branch
+
+**Cons**:
+- Random URLs (not branded)
+- URLs change with each deployment
+- Harder to share with clients
+
+**Setup**: None! Just use Vercel's built-in feature.
+
+---
+
+#### Option B: Subdomain Under Your Domain (For Scale)
+**Best for**: Team development, client demos, professional presentation
+
+**How it works**:
+- Create free subdomains under your existing `pawelrzepecki.com`
+- Examples: `staging.cf.pawelrzepecki.com` or `dev.cf.pawelrzepecki.com`
+- Since you own the domain, subdomains are free!
+
+**Setup**:
+1. **In Squarespace DNS** (where you manage pawelrzepecki.com):
+   ```
+   Type: CNAME
+   Host: staging.cf
+   Points to: cname.vercel-dns.com
+   TTL: 3600
+   ```
+
+2. **In Vercel Dashboard**:
+   - Project Settings → Domains
+   - Add: `staging.cf.pawelrzepecki.com`
+
+3. **Create Staging Supabase Project** (separate database):
+   - New project in Supabase
+   - Run same schema migrations
+   - Use test Stripe keys
+
+**Pros**:
+- ✅ Professional branded URL
+- ✅ Persistent URL for sharing
+- ✅ Separate database for safety
+- ✅ Perfect for client demos
+
+**Cons**:
+- Requires DNS configuration
+- More complex setup
+- Overkill for solo MVP
+
+---
+
+### Recommended: Start with Option A (Preview Deployments)
+
+For your current MVP stage, use **Vercel Preview Deployments** (Option A):
+
+**Actions for Stage 2**:
 ```yaml
 1. Run full test suite
 2. Build with production optimizations
 3. Run integration tests
-4. Deploy to staging.captionflow.com
-5. Run smoke tests
-6. Send Slack/Discord notification
+4. Deploy to Vercel Preview URL (auto-generated)
+5. Run smoke tests on preview URL
+6. Send Slack/Discord notification with preview link
 ```
 
-**Staging Environment**:
-- **URL**: `staging.captionflow.com` or `dev.captionflow.com`
-- **Database**: Supabase staging project (separate from prod)
-- **Stripe**: Test mode keys only
-- **Purpose**: QA testing, client demos, feature validation
+**When to upgrade to Option B**:
+- When you have 3+ team members
+- When doing client demos regularly
+- When you need persistent test data
+- When ready to invest 1-2 hours in setup
 
-**DNS Setup**:
+---
+
+### Stage 3: Production Deployment
+**Trigger**: Manual approval or tagged release
+
+**Actions**:
+```yaml
+1. Verify preview deployment health (or staging if using Option B)
+2. Create database backup (Supabase)
+3. Deploy to cf.pawelrzepecki.com
+4. Run health checks
+5. Verify critical paths (login, caption generation)
+6. Monitor error rates (5 minutes)
+7. If errors > threshold → automatic rollback
+8. Send deployment success notification
 ```
-staging.captionflow.com CNAME → cname.vercel-dns.com
-```
+
+**Rollback Strategy**:
+- Vercel provides instant rollback to previous deployment
+- Database: Point-in-time recovery (Supabase)
+- Stripe: Webhooks handle subscription state
 
 ---
 
