@@ -395,12 +395,48 @@ redirectTo: `${window.location.origin}/api/auth/callback`
 
 ---
 
-## Conclusion
+## UI/UX Refinement & Brand Positioning
+- [UI/UX Refinement & Brand Positioning](#uiux-refinement--brand-positioning)
+- [Advanced CI/CD & Staging Infrastructure](#advanced-cicd--staging-infrastructure)
 
+---
+
+## UI/UX Refinement & Brand Positioning
+
+### Issue 14: Premium Aesthetic with Tailwind 4
+**Insight**: Leveraging OKLCH colors and glassmorphism (backdrop-blur) elevates a boilerplate UI to a premium SaaS aesthetic.
+**Best Practice**: Use `backdrop-blur-sm` with semi-transparent white borders (`border-white/20`) for a polished Apple-like feel.
+
+### Issue 15: Brand Pivot Strategy
+**Lesson**: Competing on price (e.g., "75% cheaper") is a race to the bottom. Competing on value/authenticity (e.g., "Captions that sound like you") builds a stronger brand identity.
+**Implementation**: Shift headers from price-focused to outcome-focused.
+
+---
+
+## Advanced CI/CD & Staging Infrastructure
+
+### Issue 16: Database Isolation
+**Problem**: Testing new migrations or deleting test data on a production database is risky.
+**Solution**: Use a separate Supabase project for Staging.
+**Key Learning**: For new Supabase projects, use the **Transaction Pooler** (IPv4) connection string instead of the direct one (IPv6) to avoid connection timeouts in many CI environments.
+
+### Issue 17: Supabase API Key Evolution
+**Change**: Supabase has transitioned from "anon/service_role" terminology to "Publishable/Secret".
+**Alignment**: Standardize your environment variables to match:
+  - `NEXT_PUBLIC_SUPABASE_KEY` (Publishable)
+  - `SUPABASE_SERVICE_ROLE_KEY` (Secret)
+
+### Issue 18: Manual Approval Gates
+**Security**: Add a `Required Reviewer` to the production environment in GitHub Actions.
+**Benefit**: Prevents accidental deployments to `main` from going live before a final check on the staging preview.
+
+---
+
+## Conclusion
 The main challenges were:
 1. **Understanding Supabase auth vs database clients** - Critical distinction
 2. **OAuth flow cookie handling** - Easy to miss
-3. **Environment configuration** - Vercel-specific requirements
-4. **TypeScript/Next.js updates** - Breaking changes in v14/v15
+3. **Drafting a scalable CI/CD strategy** - Moving from "push to deploy" to "verify then deploy".
+4. **Designing for 'premium'** - Small details like fonts (Outfit) and shadows make a huge difference.
 
-Always test authentication flows thoroughly before deployment!
+Always test on staging before hitting production!

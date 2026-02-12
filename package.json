@@ -8,8 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
+    "type-check": "tsc --noEmit",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "health-check": "node scripts/health-check.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",

@@ -71,21 +71,21 @@ Platforms: ${validatedData.platform.join(', ')}
 
 Platform-specific guidelines:
 ${validatedData.platform
-  .map(p => {
-    switch (p) {
-      case 'instagram':
-        return '- Instagram: Under 2,200 characters, use emojis naturally, conversational';
-      case 'tiktok':
-        return '- TikTok: Under 150 characters, energetic, trend-friendly, punchy';
-      case 'linkedin':
-        return '- LinkedIn: Professional, under 3,000 characters, no hashtags in body text';
-      case 'twitter':
-        return '- Twitter: Under 280 characters, conversational, punchy';
-      default:
-        return '';
-    }
-  })
-  .join('\n')}`;
+        .map(p => {
+          switch (p) {
+            case 'instagram':
+              return '- Instagram: Under 2,200 characters, use emojis naturally, conversational';
+            case 'tiktok':
+              return '- TikTok: Under 150 characters, energetic, trend-friendly, punchy';
+            case 'linkedin':
+              return '- LinkedIn: Professional, under 3,000 characters, no hashtags in body text';
+            case 'twitter':
+              return '- Twitter: Under 280 characters, conversational, punchy';
+            default:
+              return '';
+          }
+        })
+        .join('\n')}`;
 
     // Add brand voice if provided
     if (validatedData.brandVoiceId) {
@@ -109,6 +109,12 @@ ${validatedData.platform
           systemPrompt += `\n\nMatch this brand voice. Here are example captions that show the user's style:\n${examples.map((ex, i) => `${i + 1}. "${ex}"`).join('\n')}\n\nWrite in this exact style - same tone, vocabulary, sentence structure, and personality.`;
         }
       }
+    }
+
+    // Pro/Team users get viral-optimized prompts
+    const isPaidUser = userData.subscription_tier === 'pro' || userData.subscription_tier === 'team';
+    if (isPaidUser) {
+      systemPrompt += `\n\n🔥 VIRAL OPTIMIZATION (Pro feature):\n1. HOOK: The first line MUST be scroll-stopping. Use a curiosity gap, bold claim, or provocative question. Never start with generic openers.\n2. READABILITY: Use short, punchy sentences. Add strategic line breaks every 1-2 sentences. No walls of text.\n3. CTA: End with a clear call-to-action (ask a question, invite comments, or prompt saves/shares).\n4. EMOTION: Trigger at least one strong emotion (surprise, FOMO, inspiration, humor).\n5. PATTERN INTERRUPT: Include at least one unexpected element that breaks the scroll pattern.`;
     }
 
     // Call OpenAI
@@ -178,6 +184,7 @@ Make the caption authentic and engaging. The hashtags should be specific to the 
         platform: validatedData.platform,
         tone: validatedData.tone,
       },
+      tier: userData.subscription_tier,
       remainingToday:
         userData.subscription_tier === 'free'
           ? dailyLimit - (userData.daily_caption_count + 1)

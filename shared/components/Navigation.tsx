@@ -46,6 +46,7 @@ export function Navigation() {
     { href: '/caption-generator', label: 'Generate' },
     { href: '/brand-voice', label: 'Brand Voice' },
     { href: '/dashboard', label: 'Saved Captions' },
+    { href: '/settings', label: 'Settings' },
   ] : [];
 
   return (

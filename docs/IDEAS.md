@@ -118,6 +118,31 @@
 
 ---
 
+### 9. Banned Word Shield (Core/Safety)
+**What**: Scan for shadow-ban trigger words (medical claims, toxic terms, platform-specific sensitive terms).
+**Why**: Creators are terrified of reach suppression. This adds "Account Insurance."
+**Implementation**:
+- Curated list of high-risk terms.
+- Real-time highlighting in text editor.
+- Suggest "safer" synonyms.
+**Viral Potential**: ⭐⭐⭐⭐
+**Effort**: Low
+**Priority**: **P1**
+
+---
+
+### 10. Multimodal Carousel Planner (Core AI)
+**What**: Upload 5-10 images; AI creates a consistent "swiping story" across all slides.
+**Why**: Carousels have the highest reach on IG; narrative flow is hard to master.
+**Implementation**:
+- Analyze visual sequence.
+- Generate slide-by-slide captions (hooks -> body -> CTA).
+**Viral Potential**: ⭐⭐⭐⭐⭐
+**Effort**: High
+**Priority**: **P2**
+
+---
+
 ## 🚀 Viral & Growth Features
 
 ### 9. Trending Sounds Integration
@@ -211,6 +236,18 @@
 
 ---
 
+### 18. The "One-Click Remix" (Growth)
+**What**: Paste a viral post URL; AI rewrites it in *your* Brand Voice DNA.
+**Why**: Creators don't want to reinvent the wheel; they want to "Remix" what works.
+**Implementation**:
+- Scrape content from URL (Instagram, X, TikTok).
+- Apply "Brand Voice" filter.
+**Viral Potential**: ⭐⭐⭐⭐⭐
+**Effort**: Medium
+**Priority**: **P1**
+
+---
+
 ## ⚡ UX & Easy Wins
 
 ### 16. Chrome Extension
@@ -301,6 +338,18 @@
 **Viral Potential**: ⭐⭐⭐
 **Effort**: Low
 **Priority**: **P2**
+
+---
+
+### 23. Voice-to-Vibe (UX)
+**What**: Dictate messy thoughts on mobile; AI turns it into a polished, emoji-optimized caption.
+**Why**: Typing on mobile is the #1 friction point for real-time posting.
+**Implementation**:
+- Whisper/OpenAI Transcription.
+- "Vibe" mapping (Professional, Hype, Chill).
+**Viral Potential**: ⭐⭐⭐⭐⭐
+**Effort**: Medium
+**Priority**: **P1**
 
 ---
 
@@ -412,18 +461,30 @@
 
 ---
 
+### 30. Agency Multi-Tenant Kits (Revenue)
+**What**: Switch between 50+ Brand DNA profiles with one toggle.
+**Why**: Scales to SMM Agencies (High LTV) instead of just individuals.
+**Implementation**:
+- Tenant-level data isolation.
+- Fast-switching dashboard.
+**Viral Potential**: ⭐⭐
+**Effort**: High
+**Priority**: **P1**
+
+---
+
 ## 🎯 Implementation Roadmap
 
-### Phase 1: Core MVP Improvements (Month 1-2)
-**Goal**: Fix core issues, add viral features
+### Phase 1: The "Triple Threat" (Month 1-2)
+**Goal**: Establish essential utility and massive distribution.
 
 1. ✅ ~~Fix Google OAuth~~
 2. ✅ ~~Fix database user creation~~
-3. **AI Vision - Image Caption** (P0)
-4. **Viral Score Predictor** (P0)
-5. **Hook Generator** (P0)
+3. **AI Vision - Image Caption** (P0) - *Core Utility*
+4. **Chrome Extension** (P1) - *Distribution Engine*
+5. **Viral Score & Hook Generator** (P0) - *Retention Hook*
 6. **One-Click Copy Fix** (P0)
-7. **Chrome Extension** (P1)
+7. **One-Click Remix** (P1) - *Growth Loop*
 
 ### Phase 2: Growth Features (Month 2-3)
 **Goal**: Increase virality and retention
@@ -462,27 +523,13 @@
 
 ### High Value (P1) - Build Next
 5. Chrome Extension
-6. Video Thumbnail Analysis
-7. Referral Program
-8. Caption Templates
-9. Screenshot to Post
-
-### Nice to Have (P2) - Later
-10. Product Photo Marketing
-11. Visual Hashtags
-12. Best Time to Post
-13. Multi-Language
-14. AI Caption Coach
-
-### Enterprise (P3) - Future
-15. Team Workspaces
-16. Scheduling Calendar
-17. Mobile App
-18. API Access
-
-### Advanced (P4)
-19. Competitor Analysis
-20. White-Label
+6. One-Click Remix
+7. Competitor Caption Analysis (Upped from P4)
+8. Banned Word Shield
+9. Voice-to-Vibe
+10. Agency Multi-Tenant Kits
+11. Video Thumbnail Analysis
+12. Referral Program
 
 ---
 
