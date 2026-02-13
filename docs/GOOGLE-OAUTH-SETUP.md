@@ -32,7 +32,7 @@ CaptionFlow supports Sign in with Google. This guide walks you through setting u
    - **Name**: CaptionFlow
    - **Authorized JavaScript origins**:
      - http://localhost:3000 (for development)
-     - https://cf.pawelrzepecki.com (for production)
+     - https://captionflow.xyz (for production)
    - **Authorized redirect URIs**:
      - https://qkgcdcxnmwdvaeibxrbu.supabase.co/auth/v1/callback
 
@@ -52,7 +52,7 @@ CaptionFlow supports Sign in with Google. This guide walks you through setting u
 ### 6. Deploy
 1. Deploy to Vercel
 2. Update Google Cloud Console with production URLs:
-   - Add: https://cf.pawelrzepecki.com to Authorized JavaScript origins
+   - Add: https://captionflow.xyz to Authorized JavaScript origins
    - The redirect URI stays the same (Supabase handles it)
 
 ## How It Works

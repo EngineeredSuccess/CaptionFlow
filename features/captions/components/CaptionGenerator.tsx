@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Copy, RefreshCw, Sparkles, Clock, ImagePlus, X, Type, Camera, Zap, Info } from 'lucide-react';
+import { Loader2, Copy, RefreshCw, Sparkles, Clock, ImagePlus, X, Type, Camera, Zap, Info, CalendarClock } from 'lucide-react';
 
 const TONES = [
   { value: 'casual', label: '😎 Casual', description: 'Relaxed and conversational' },
@@ -75,6 +75,13 @@ export function CaptionGenerator() {
 
   // Boost state
   const [isBoosting, setIsBoosting] = useState(false);
+
+  // Scheduling state
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('');
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [scheduleSuccess, setScheduleSuccess] = useState(false);
 
   // Vision state
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -664,6 +671,17 @@ export function CaptionGenerator() {
                       Refine Hooks
                     </Button>
                     <Button
+                      variant="outline"
+                      onClick={() => { setShowScheduler(!showScheduler); setScheduleSuccess(false); }}
+                      className={`h-14 px-8 rounded-xl font-bold transition-all ${showScheduler
+                          ? 'border-primary bg-primary/5 text-primary'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900'
+                        }`}
+                    >
+                      <CalendarClock className="mr-2 h-5 w-5" />
+                      Schedule
+                    </Button>
+                    <Button
                       variant="ghost"
                       onClick={generateCaption}
                       disabled={isLoading}
@@ -673,6 +691,81 @@ export function CaptionGenerator() {
                       Regenerate All
                     </Button>
                   </div>
+
+                  {/* Schedule Panel */}
+                  {showScheduler && (
+                    <div className="animate-in slide-in-from-top-2 fade-in duration-300 p-5 bg-gradient-to-r from-primary/5 to-purple-500/5 rounded-2xl border border-primary/20 space-y-4">
+                      <p className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
+                        <CalendarClock className="w-4 h-4" /> Schedule This Post
+                      </p>
+                      {scheduleSuccess ? (
+                        <div className="flex items-center gap-3 text-sm text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-xl">
+                          <span className="text-lg">✅</span> Post scheduled! View it in your <a href="/scheduled" className="underline text-primary ml-1">Content Calendar</a>.
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap items-end gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-zinc-400 uppercase">Date</label>
+                            <input
+                              type="date"
+                              value={scheduleDate}
+                              onChange={(e) => setScheduleDate(e.target.value)}
+                              min={new Date().toISOString().split('T')[0]}
+                              className="h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-zinc-400 uppercase">Time</label>
+                            <input
+                              type="time"
+                              value={scheduleTime}
+                              onChange={(e) => setScheduleTime(e.target.value)}
+                              className="h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            />
+                          </div>
+                          <Button
+                            onClick={async () => {
+                              if (!scheduleDate || !scheduleTime || !result) return;
+                              setIsScheduling(true);
+                              try {
+                                const scheduledAt = new Date(`${scheduleDate}T${scheduleTime}:00`).toISOString();
+                                const res = await fetch('/api/schedule-post', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    captionId: result.id,
+                                    scheduledAt,
+                                    publishPlatforms: selectedPlatforms,
+                                  }),
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                  setScheduleSuccess(true);
+                                  setTimeout(() => {
+                                    setShowScheduler(false);
+                                    setScheduleSuccess(false);
+                                    setScheduleDate('');
+                                    setScheduleTime('');
+                                  }, 4000);
+                                } else {
+                                  setError(data.error || 'Scheduling failed');
+                                }
+                              } catch {
+                                setError('Failed to schedule post');
+                              } finally {
+                                setIsScheduling(false);
+                              }
+                            }}
+                            disabled={isScheduling || !scheduleDate || !scheduleTime}
+                            className="h-12 px-6 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:opacity-90"
+                          >
+                            {isScheduling ? <Loader2 className="mr-2 w-4 h-4 animate-spin" /> : <CalendarClock className="mr-2 w-4 h-4" />}
+                            Confirm Schedule
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-32 space-y-4">

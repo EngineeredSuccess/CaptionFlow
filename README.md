@@ -90,17 +90,17 @@ vercel --prod
 
 ### Domain Configuration
 
-Your site is configured for: **https://cf.pawelrzepecki.com**
+Your site is configured for: **https://captionflow.xyz**
 
 1. Deploy to Vercel
-2. Add custom domain in Vercel Dashboard: `cf.pawelrzepecki.com`
+2. Add custom domain in Vercel Dashboard: `captionflow.xyz`
 3. In Squarespace DNS, add CNAME:
    - Host: `cf`
    - Points to: `cname.vercel-dns.com`
 
 ### Stripe Webhook Setup
 
-**Webhook URL**: `https://cf.pawelrzepecki.com/api/stripe-webhook`
+**Webhook URL**: `https://captionflow.xyz/api/stripe-webhook`
 
 Events to listen for:
 - `checkout.session.completed`

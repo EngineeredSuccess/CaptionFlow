@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: production
-      url: https://cf.pawelrzepecki.com
+      url: https://captionflow.xyz
     steps:
       - uses: actions/checkout@v4
       
@@ -65,6 +65,33 @@ jobs:
         
       - name: Deploy Project Artifacts to Vercel
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: captionflow
+
+      - name: Health Check
+        run: npm run health-check
+        working-directory: captionflow
+        env:
+          APP_URL: https://captionflow.xyz
+
+  deploy-staging:
+    needs: test
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: 
+      name: staging
+      url: https://cf.pawelrzepecki.com
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+        
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: captionflow
+        
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: captionflow
 
       - name: Health Check

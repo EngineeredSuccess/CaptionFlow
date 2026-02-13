@@ -49,9 +49,14 @@ export default function LandingPage() {
                     Start Creating Free
                   </Button>
                 </Link>
+                <Link href="/waitlist">
+                  <Button size="lg" variant="outline" className="h-14 px-10 text-lg rounded-2xl border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-colors">
+                    Join Waitlist
+                  </Button>
+                </Link>
                 <Link href="/pricing">
-                  <Button size="lg" variant="outline" className="h-14 px-10 text-lg rounded-2xl border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors">
-                    View Pricing
+                  <Button size="lg" variant="ghost" className="h-14 px-8 text-lg rounded-2xl text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors">
+                    Pricing
                   </Button>
                 </Link>
               </div>
@@ -401,6 +406,7 @@ export default function LandingPage() {
             <div>
               <h4 className="text-white font-bold mb-6 uppercase tracking-widest text-xs">Product</h4>
               <ul className="space-y-4 text-sm font-medium">
+                <li><Link href="/waitlist" className="text-primary font-bold hover:underline">Join Waitlist ✨</Link></li>
                 <li><Link href="/caption-generator" className="hover:text-primary transition-colors">Generator</Link></li>
                 <li><Link href="/brand-voice" className="hover:text-primary transition-colors">Brand DNA</Link></li>
                 <li><Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>

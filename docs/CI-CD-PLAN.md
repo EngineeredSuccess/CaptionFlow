@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-**Recommended Approach**: Multi-stage GitHub Actions pipeline with automated testing, staging environment, and zero-downtime production deployment to `cf.pawelrzepecki.com`.
+**Recommended Approach**: Multi-stage GitHub Actions pipeline with automated testing, staging environment, and zero-downtime production deployment to `captionflow.xyz`.
 
 **Why This Approach**: Professional-grade reliability, cost-effective for MVP stage, scales to enterprise needs.
 
@@ -10,7 +10,7 @@
 
 ## Current Setup Analysis
 
-**Deployment Target**: `cf.pawelrzepecki.com` (subdomain on Squarespace-hosted main domain)
+**Deployment Target**: `captionflow.xyz` (subdomain on Squarespace-hosted main domain)
 **Platform**: Vercel + Supabase + Stripe
 **Repository**: GitHub (EngineeredSuccess/CaptionFlow)
 
@@ -70,7 +70,7 @@ You have **two free options** for staging - choose based on your needs:
 
 **How it works**:
 - Create free subdomains under your existing `pawelrzepecki.com`
-- Examples: `staging.cf.pawelrzepecki.com` or `dev.cf.pawelrzepecki.com`
+- Examples: `staging.captionflow.xyz` or `dev.captionflow.xyz`
 - Since you own the domain, subdomains are free!
 
 **Setup**:
@@ -84,7 +84,7 @@ You have **two free options** for staging - choose based on your needs:
 
 2. **In Vercel Dashboard**:
    - Project Settings → Domains
-   - Add: `staging.cf.pawelrzepecki.com`
+   - Add: `staging.captionflow.xyz`
 
 3. **Create Staging Supabase Project** (separate database):
    - New project in Supabase
@@ -133,7 +133,7 @@ For your current MVP stage, use **Vercel Preview Deployments** (Option A):
 ```yaml
 1. Verify preview deployment health (or staging if using Option B)
 2. Create database backup (Supabase)
-3. Deploy to cf.pawelrzepecki.com
+3. Deploy to captionflow.xyz
 4. Run health checks
 5. Verify critical paths (login, caption generation)
 6. Monitor error rates (5 minutes)
@@ -155,7 +155,7 @@ For your current MVP stage, use **Vercel Preview Deployments** (Option A):
 ```yaml
 1. Verify staging deployment health
 2. Create database backup (Supabase)
-3. Deploy to cf.pawelrzepecki.com
+3. Deploy to captionflow.xyz
 4. Run health checks
 5. Verify critical paths (login, caption generation)
 6. Monitor error rates (5 minutes)
@@ -239,7 +239,7 @@ jobs:
 
 3. **Environment Variables Strategy**:
 ```
-Production (cf.pawelrzepecki.com):
+Production (captionflow.xyz):
   - Supabase: Production project
   - Stripe: Live keys
   - OpenAI: Production
@@ -285,7 +285,7 @@ GitHub Settings → Environments:
 2. Production
    - Protected: Yes
    - Required reviewers: 1 (you)
-   - URL: https://cf.pawelrzepecki.com
+   - URL: https://captionflow.xyz
 ```
 
 ---
@@ -407,7 +407,7 @@ analytics.track('caption_generated', {
 
 ### Uptime Monitoring: UptimeRobot
 **Setup**:
-- Monitor: https://cf.pawelrzepecki.com
+- Monitor: https://captionflow.xyz
 - Check interval: 5 minutes
 - Alert via: Email, Slack
 

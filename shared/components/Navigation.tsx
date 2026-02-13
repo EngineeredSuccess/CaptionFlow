@@ -44,6 +44,8 @@ export function Navigation() {
 
   const navLinks = user ? [
     { href: '/caption-generator', label: 'Generate' },
+    { href: '/research', label: 'Research' },
+    { href: '/scheduled', label: 'Scheduled' },
     { href: '/brand-voice', label: 'Brand Voice' },
     { href: '/dashboard', label: 'Saved Captions' },
     { href: '/settings', label: 'Settings' },
@@ -90,7 +92,7 @@ export function Navigation() {
               <Button variant="outline" size="sm" onClick={handleLogout} className="rounded-lg">
                 Sign Out
               </Button>
-            ) : (
+            ) : pathname === '/waitlist' ? null : (
               <div className="flex items-center gap-3">
                 <Link href="/login">
                   <Button variant="ghost" size="sm" className="font-medium">Sign In</Button>

@@ -164,11 +164,11 @@ GH013: Repository rule violations found - Push cannot contain secrets
 
 **Setup**:
 - Main site: pawelrzepecki.com (Squarespace)
-- App: cf.pawelrzepecki.com (Vercel)
+- App: captionflow.xyz (Vercel)
 
 **Solution**:
 1. Deploy to Vercel
-2. In Vercel Dashboard: Settings → Domains → Add `cf.pawelrzepecki.com`
+2. In Vercel Dashboard: Settings → Domains → Add `captionflow.xyz`
 3. In Squarespace DNS: Add CNAME record
    - Host: `cf`
    - Points to: `cname.vercel-dns.com`

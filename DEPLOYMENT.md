@@ -11,6 +11,8 @@
 3. **Stripe Account**: For payments
 4. **Supabase Project**: Already configured
 5. **Resend Account**: For emails
+- **Production**: `https://captionflow.xyz` (Branch: `main`)
+- **Staging/Dev**: `https://cf.pawelrzepecki.com` (Branch: `develop`)
 
 ## ⚙️ Environment Variables
 
@@ -45,7 +47,7 @@
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe publishable key
 - `STRIPE_SECRET_KEY` - Stripe secret key
 - `STRIPE_WEBHOOK_SECRET` - Webhook signing secret
-- `WEBHOOK_END_URL` - https://cf.pawelrzepecki.com/api/stripe-webhook
+- `WEBHOOK_END_URL` - https://captionflow.xyz/api/stripe-webhook
 
 ### Stripe Products
 - `STRIPE_PRO_PRICE_ID` - Pro plan price ID
@@ -60,7 +62,7 @@
 - `UPSTASH_REDIS_REST_TOKEN` - Redis REST token
 
 ### App Config
-- `NEXT_PUBLIC_APP_URL` - https://cf.pawelrzepecki.com
+- `NEXT_PUBLIC_APP_URL` - https://captionflow.xyz
 - `FREE_DAILY_LIMIT` - 10
 - `BETA_ENABLED` - true
 - `MAX_BETA_USERS` - 100
@@ -80,7 +82,7 @@ If you don't have them handy, here are the locations:
 
 1. Go to [Stripe Dashboard](https://dashboard.stripe.com/webhooks)
 2. Click "Add endpoint"
-3. **Endpoint URL**: `https://cf.pawelrzepecki.com/api/stripe-webhook`
+3. **Endpoint URL**: `https://captionflow.xyz/api/stripe-webhook`
 4. **Events to listen for**:
    - `checkout.session.completed`
    - `customer.subscription.deleted`
@@ -91,10 +93,10 @@ If you don't have them handy, here are the locations:
 Since your main site is on Squarespace (pawelrzepecki.com), deploy CaptionFlow to a subdomain:
 
 ### Subdomain Setup
-Deploy CaptionFlow to `cf.pawelrzepecki.com`:
+Deploy CaptionFlow to `captionflow.xyz`:
 
 1. In Vercel Dashboard → Project Settings → Domains
-2. Add `cf.pawelrzepecki.com`
+2. Add `captionflow.xyz`
 3. In Squarespace DNS settings, add CNAME record:
    - Type: CNAME
    - Host: cf
@@ -124,7 +126,7 @@ vercel --prod
 
 ## 📝 Post-Deployment Checklist
 
-- [ ] Site loads at https://cf.pawelrzepecki.com
+- [ ] Site loads at https://captionflow.xyz
 - [ ] Sign up works
 - [ ] Caption generation works
 - [ ] Stripe checkout works
