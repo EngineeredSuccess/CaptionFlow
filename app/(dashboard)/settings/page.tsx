@@ -5,6 +5,7 @@ import { createClient } from '@/shared/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, User, CreditCard, BarChart3, Shield, ExternalLink } from 'lucide-react';
+import { SocialConnections } from '@/features/social/components/SocialConnections';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -217,6 +218,9 @@ export default function SettingsPage() {
                         </Button>
                     </CardContent>
                 </Card>
+
+                {/* Social Connections */}
+                <SocialConnections />
             </div>
         </div>
     );
