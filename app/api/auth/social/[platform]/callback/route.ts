@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // OAuth token URLs for each platform
 const TOKEN_URLS: Record<string, string> = {
-    instagram: 'https://api.instagram.com/oauth/access_token',
+    instagram: 'https://graph.facebook.com/v18.0/oauth/access_token',
     linkedin: 'https://www.linkedin.com/oauth/v2/accessToken',
     twitter: 'https://api.twitter.com/2/oauth2/token',
     tiktok: 'https://open.tiktokapis.com/v2/oauth/token/',
@@ -20,9 +20,20 @@ const CLIENT_ENV_KEYS: Record<string, { id: string; secret: string }> = {
 async function fetchPlatformProfile(platform: string, accessToken: string): Promise<{ handle: string; platformUserId: string }> {
     try {
         if (platform === 'instagram') {
-            const res = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`);
+            // For Instagram Graph API, we fetch the Facebook Pages and find the linked IG Business Account
+            const res = await fetch(`https://graph.facebook.com/v18.0/me/accounts?fields=instagram_business_account{id,username}&access_token=${accessToken}`);
             const data = await res.json();
-            return { handle: `@${data.username}`, platformUserId: data.id };
+
+            // Find the first Page that has an Instagram Business Account linked
+            const pageWithIg = data.data?.find((page: any) => page.instagram_business_account);
+
+            if (pageWithIg) {
+                return {
+                    handle: `@${pageWithIg.instagram_business_account.username}`,
+                    platformUserId: pageWithIg.instagram_business_account.id
+                };
+            }
+            return { handle: 'No IG Account Linked', platformUserId: 'none' };
         }
         if (platform === 'linkedin') {
             const res = await fetch('https://api.linkedin.com/v2/userinfo', {

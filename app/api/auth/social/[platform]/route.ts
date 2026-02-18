@@ -10,9 +10,9 @@ const OAUTH_CONFIG: Record<string, {
     clientSecretEnv: string;
 }> = {
     instagram: {
-        authUrl: 'https://api.instagram.com/oauth/authorize',
-        tokenUrl: 'https://api.instagram.com/oauth/access_token',
-        scopes: ['instagram_basic', 'instagram_content_publish', 'pages_show_list'],
+        authUrl: 'https://www.facebook.com/v18.0/dialog/oauth',
+        tokenUrl: 'https://graph.facebook.com/v18.0/oauth/access_token',
+        scopes: ['instagram_basic', 'instagram_content_publish', 'pages_show_list', 'pages_read_engagement', 'public_profile'],
         clientIdEnv: 'INSTAGRAM_CLIENT_ID',
         clientSecretEnv: 'INSTAGRAM_CLIENT_SECRET',
     },
