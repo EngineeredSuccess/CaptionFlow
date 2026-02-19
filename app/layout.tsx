@@ -35,6 +35,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="tiktok-developers-site-verification" content="vZ1Crc4v9o2R9anjclQLemXhJqoyQQsF" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} antialiased`}
       >
