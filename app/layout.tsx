@@ -21,6 +21,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CaptionFlow - AI Social Media Caption Generator",
   description: "Generate engaging social media captions with AI. Train on your brand voice for authentic results. 75% cheaper than EasyGen.",
+  verification: {
+    other: {
+      "tiktok-developers-site-verification": "vZ1Crc4v9o2R9anjclQLemXhJqoyQQsF",
+    },
+  },
 };
 
 export default function RootLayout({
