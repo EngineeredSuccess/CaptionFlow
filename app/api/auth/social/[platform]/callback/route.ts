@@ -112,6 +112,7 @@ export async function GET(
         const headers: Record<string, string> = {};
 
         if (platform === 'instagram') {
+            console.log('Exchanging code for token:', { code, redirectUri });
             tokenBody = new URLSearchParams({
                 client_id: clientId,
                 client_secret: clientSecret,
@@ -200,6 +201,7 @@ export async function GET(
             return NextResponse.redirect(new URL('/settings?social_error=save_failed', request.url));
         }
 
+        console.log('Successfully connected:', platform, handle);
         return NextResponse.redirect(new URL(`/settings?social_connected=${platform}`, request.url));
     } catch (error) {
         console.error('OAuth callback error:', error);

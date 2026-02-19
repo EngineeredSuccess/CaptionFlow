@@ -17,6 +17,10 @@ export async function GET() {
             .eq('user_id', user.id)
             .order('connected_at', { ascending: false });
 
+        console.log('Fetching connections for user:', user.id);
+        console.log('Found connections:', connections);
+        console.log('Error if any:', error);
+
         if (error) {
             console.error('Error fetching connections:', error);
             return NextResponse.json({ error: 'Failed to fetch connections' }, { status: 500 });
