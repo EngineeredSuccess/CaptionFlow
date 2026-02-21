@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 tiktok-developers-site-verification=3PHlOJgI5byEHPdRM8vDqzxn4nUnbLQH
+=======
+tiktok-developers-site-verification=3PHlOJgI5byEHPdRM8vDqzxn4nUnbLQH
+>>>>>>> develop
