@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   description: "Generate engaging social media captions with AI. Train on your brand voice for authentic results. 75% cheaper than EasyGen.",
   verification: {
     other: {
-      "tiktok-developers-site-verification": "vZ1Crc4v9o2R9anjclQLemXhJqoyQQsF",
+      "tiktok-developers-site-verification": "XrWl3KskFbPerDAyJ52hE7HrnoNnQ7NM",
     },
   },
 };
@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="tiktok-developers-site-verification" content="vZ1Crc4v9o2R9anjclQLemXhJqoyQQsF" />
+        <meta name="tiktok-developers-site-verification" content="XrWl3KskFbPerDAyJ52hE7HrnoNnQ7NM" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} antialiased`}
