@@ -65,7 +65,7 @@ export function CaptionGenerator() {
   const [userTier, setUserTier] = useState<string>('free');
 
   // Analysis state
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
 
   // Hooks state
@@ -612,7 +612,7 @@ export function CaptionGenerator() {
                             Power Tip
                           </p>
                           <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 italic">
-                            "{analysis.suggestion}"
+                            &quot;{analysis.suggestion}&quot;
                           </p>
                         </div>
                         {analysis.score < 80 && (
@@ -818,7 +818,7 @@ export function CaptionGenerator() {
                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Badge className="bg-primary text-white border-none text-[10px]">Swap</Badge>
                       </div>
-                      <p className="text-base font-bold text-zinc-800 dark:text-zinc-200">"{hook}"</p>
+                      <p className="text-base font-bold text-zinc-800 dark:text-zinc-200">&quot;{hook}&quot;</p>
                     </button>
                   ))
                 )}

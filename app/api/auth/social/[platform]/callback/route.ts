@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import OpenAI from 'openai';
 
 // OAuth token URLs for each platform
 const TOKEN_URLS: Record<string, string> = {
@@ -17,7 +18,8 @@ const CLIENT_ENV_KEYS: Record<string, { id: string; secret: string }> = {
 };
 
 // Platform-specific profile fetchers
-async function fetchPlatformProfile(platform: string, accessToken: string): Promise<{ handle: string; platformUserId: string }> {
+async function fetchPlatformProfile(platform: string, accessToken: string): Promise<{ handle: string; platformUserId: string; recentCaptions: string[] }> {
+    let recentCaptions: string[] = [];
     try {
         if (platform === 'instagram') {
             // For Instagram Graph API, we fetch the Facebook Pages and find the linked IG Business Account
@@ -25,41 +27,59 @@ async function fetchPlatformProfile(platform: string, accessToken: string): Prom
             const data = await res.json();
 
             // Find the first Page that has an Instagram Business Account linked
-            const pageWithIg = data.data?.find((page: any) => page.instagram_business_account);
+            const pageWithIg = data.data?.find((page: { instagram_business_account?: { id: string; username: string } }) => page.instagram_business_account);
 
             if (pageWithIg) {
+                const igId = pageWithIg.instagram_business_account.id;
+                
+                // Fetch recent media to extract DNA
+                try {
+                    const mediaRes = await fetch(`https://graph.facebook.com/v18.0/${igId}/media?fields=caption&limit=5&access_token=${accessToken}`);
+                    const mediaData = await mediaRes.json();
+                    if (mediaData.data) {
+                        recentCaptions = mediaData.data
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            .filter((m: any) => m.caption)
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            .map((m: any) => m.caption);
+                    }
+                } catch (mediaErr) {
+                    console.error('Failed to fetch IG media:', mediaErr);
+                }
+
                 return {
                     handle: `@${pageWithIg.instagram_business_account.username}`,
-                    platformUserId: pageWithIg.instagram_business_account.id
+                    platformUserId: igId,
+                    recentCaptions
                 };
             }
-            return { handle: 'No IG Account Linked', platformUserId: 'none' };
+            return { handle: 'No IG Account Linked', platformUserId: 'none', recentCaptions };
         }
         if (platform === 'linkedin') {
             const res = await fetch('https://api.linkedin.com/v2/userinfo', {
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
             const data = await res.json();
-            return { handle: data.name || data.email || 'LinkedIn User', platformUserId: data.sub };
+            return { handle: data.name || data.email || 'LinkedIn User', platformUserId: data.sub, recentCaptions };
         }
         if (platform === 'twitter') {
             const res = await fetch('https://api.twitter.com/2/users/me', {
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
             const data = await res.json();
-            return { handle: `@${data.data.username}`, platformUserId: data.data.id };
+            return { handle: `@${data.data.username}`, platformUserId: data.data.id, recentCaptions };
         }
         if (platform === 'tiktok') {
             const res = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name', {
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
             const data = await res.json();
-            return { handle: data.data?.user?.display_name || 'TikTok User', platformUserId: data.data?.user?.open_id };
+            return { handle: data.data?.user?.display_name || 'TikTok User', platformUserId: data.data?.user?.open_id, recentCaptions };
         }
     } catch (error) {
         console.error(`Failed to fetch ${platform} profile:`, error);
     }
-    return { handle: 'Unknown', platformUserId: 'unknown' };
+    return { handle: 'Unknown', platformUserId: 'unknown', recentCaptions: [] };
 }
 
 export async function GET(
@@ -172,7 +192,38 @@ export async function GET(
             : null;
 
         // Fetch the user's profile from the platform
-        const { handle, platformUserId } = await fetchPlatformProfile(platform, accessToken);
+        const { handle, platformUserId, recentCaptions } = await fetchPlatformProfile(platform, accessToken);
+
+        // Extract Profile DNA if we have recent captions
+        let profile_dna = {};
+        if (recentCaptions.length > 0) {
+            try {
+                const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+                const prompt = `Analyze these recent social media captions and extract the user's "Profile DNA" to help an AI write like them in the future.
+Return a JSON object with EXACTLY these string keys:
+- "tone" (e.g., casual, professional, enthusiastic)
+- "emojiPattern" (e.g., end of sentences, heavy usage, none)
+- "hookStyle" (e.g., questions, bold statements)
+- "vocabularyLevel" (e.g., simple, industry-jargon)
+- "averageLength" (e.g., short, medium, long)
+
+Captions:
+${recentCaptions.map((c, i) => `[${i+1}] ${c}`).join('\n\n')}`;
+
+                const aiResponse = await openai.chat.completions.create({
+                    model: 'gpt-4o-mini',
+                    messages: [{ role: 'user', content: prompt }],
+                    response_format: { type: 'json_object' },
+                    temperature: 0.2,
+                });
+
+                if (aiResponse.choices[0].message.content) {
+                    profile_dna = JSON.parse(aiResponse.choices[0].message.content);
+                }
+            } catch (err) {
+                console.error('Failed to extract DNA:', err);
+            }
+        }
 
         // Store the connection using service role (bypasses RLS)
         const supabaseAdmin = createClient(
@@ -190,6 +241,7 @@ export async function GET(
                 access_token: accessToken,
                 refresh_token: refreshToken,
                 token_expires_at: tokenExpiresAt,
+                profile_dna,
                 connected_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
             }, {

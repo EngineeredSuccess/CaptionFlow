@@ -65,6 +65,18 @@ export async function POST(request: Request) {
           );
         }
 
+        // Fetch subscription if possible to get current_period_end right away
+        let current_period_end = null;
+        if (session.subscription) {
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const sub: any = await stripe.subscriptions.retrieve(session.subscription as string);
+                current_period_end = new Date(sub.current_period_end * 1000).toISOString();
+            } catch (err) {
+                console.error('Failed to retrieve subscription during checkout:', err);
+            }
+        }
+
         // Update subscription details
         await supabase
           .from('users')
@@ -72,6 +84,7 @@ export async function POST(request: Request) {
             subscription_tier: tier.toLowerCase(),
             subscription_status: 'active',
             subscription_id: session.subscription as string,
+            current_period_end,
             updated_at: new Date().toISOString(),
           })
           .eq('id', userId);
@@ -103,6 +116,54 @@ export async function POST(request: Request) {
             .eq('id', userId);
         }
 
+        break;
+      }
+
+      case 'invoice.paid': {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const invoice: any = event.data.object;
+        if (invoice.subscription) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const subscription: any = await stripe.subscriptions.retrieve(invoice.subscription as string);
+            const userId = subscription.metadata.userId;
+
+            if (userId) {
+              await supabase
+                .from('users')
+                .update({
+                  subscription_status: 'active',
+                  current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', userId);
+            }
+          } catch (err) {
+            console.error('Error processing invoice.paid:', err);
+          }
+        }
+        break;
+      }
+
+      case 'customer.subscription.updated': {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const subscription: any = event.data.object;
+        const userId = subscription.metadata.userId;
+        const tier = subscription.metadata.tier;
+
+        if (userId) {
+          const updates: Record<string, string> = {
+            subscription_status: subscription.status === 'active' || subscription.status === 'trialing' || subscription.status === 'past_due' ? 'active' : 'canceled',
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          if (tier) updates.subscription_tier = tier.toLowerCase();
+
+          await supabase
+            .from('users')
+            .update(updates)
+            .eq('id', userId);
+        }
         break;
       }
 

@@ -18,7 +18,7 @@ To enable TikTok integration for CaptionFlow, you need to configure a TikTok Dev
 TikTok apps require specific "Products" to be added and approved.
 
 1.  In your app dashboard, look for **"Products"** on the left.
-2.  Click **"Add Product"**.
+2.  Click **"Add Product"**.    
 3.  Add **"Login Kit"**:
     *   This is required for "Log in with TikTok".
     *   It gives access to `user.info.basic`.

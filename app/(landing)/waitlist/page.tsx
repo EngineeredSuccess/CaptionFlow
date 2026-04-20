@@ -73,7 +73,7 @@ export default function WaitlistPage() {
                 setSubmitStatus('error');
                 setMessage(data.error || 'Something went wrong.');
             }
-        } catch (error) {
+        } catch {
             setSubmitStatus('error');
             setMessage('Failed to join waitlist. Please try again.');
         } finally {
@@ -171,7 +171,7 @@ export default function WaitlistPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">{message}</h3>
-                                            <p className="text-zinc-500">We'll reach out as soon as your spot opens up.</p>
+                                            <p className="text-zinc-500">We&apos;ll reach out as soon as your spot opens up.</p>
                                         </div>
                                         <Button variant="outline" onClick={() => setSubmitStatus('idle')} className="rounded-full px-8">
                                             Wait for another?

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/shared/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, User, CreditCard, BarChart3, Shield, ExternalLink } from 'lucide-react';
+import { Loader2, User, CreditCard, BarChart3, ExternalLink } from 'lucide-react';
 import { SocialConnections } from '@/features/social/components/SocialConnections';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';

@@ -38,15 +38,7 @@ export async function POST(request: Request) {
     Format your response EXACTLY as a JSON array of strings:
     ["Hook 1", "Hook 2", "Hook 3", "Hook 4", "Hook 5"]`;
 
-        const response = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: `Generate hooks for this content:\n\n"${content}"` }
-            ],
-            response_format: { type: "json_object" }, // Note: We'll wrap it in an object to satisfy JSON mode if needed, but array should be fine if specified correctly. Actually gpt-4o-mini requires an object schema in result.
-        });
-
+        // Generate hooks using JSON mode
         // Let's refine the prompt to ensure it's a valid JSON object
         const finalResponse = await openai.chat.completions.create({
             model: 'gpt-4o-mini',

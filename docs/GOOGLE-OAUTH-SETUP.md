@@ -1,7 +1,7 @@
 # Google OAuth Setup Guide
 
 ## Overview
-CaptionFlow supports Sign in with Google. This guide walks you through setting up Google OAuth in your Supabase project.
+CaptionFlow now supports Sign in with Google. This guide walks you through setting up Google OAuth in your Supabase project.
 
 ## Steps to Configure
 
@@ -16,7 +16,7 @@ CaptionFlow supports Sign in with Google. This guide walks you through setting u
 4. Set the following:
    - **Client ID**: (from Google Cloud Console)
    - **Secret**: (from Google Cloud Console)
-   - **Redirect URL**: https://qkgcdcxnmwdvaeibxrbu.supabase.co/auth/v1/callback
+   - **Redirect URL**: https://sllxedwmfnhzkqfpccya.supabase.co/auth/v1/callback
 
 ### 3. Get Google OAuth Credentials
 
@@ -32,9 +32,9 @@ CaptionFlow supports Sign in with Google. This guide walks you through setting u
    - **Name**: CaptionFlow
    - **Authorized JavaScript origins**:
      - http://localhost:3000 (for development)
-     - https://captionflow.xyz (for production)
+     - https://cf.pawelrzepecki.com (for production)
    - **Authorized redirect URIs**:
-     - https://qkgcdcxnmwdvaeibxrbu.supabase.co/auth/v1/callback
+     -   https://sllxedwmfnhzkqfpccya.supabase.co/auth/v1/callback
 
 4. Click **Create**
 5. Copy the **Client ID** and **Client Secret**
@@ -52,7 +52,7 @@ CaptionFlow supports Sign in with Google. This guide walks you through setting u
 ### 6. Deploy
 1. Deploy to Vercel
 2. Update Google Cloud Console with production URLs:
-   - Add: https://captionflow.xyz to Authorized JavaScript origins
+   - Add: https://cf.pawelrzepecki.com to Authorized JavaScript origins
    - The redirect URI stays the same (Supabase handles it)
 
 ## How It Works
@@ -62,7 +62,7 @@ CaptionFlow supports Sign in with Google. This guide walks you through setting u
 3. User authenticates with Google
 4. Google redirects back to Supabase callback URL
 5. Supabase creates/updates user session
-6. Our `/api/auth/callback` route receives the session
+6. Our `/auth/callback` page receives the session
 7. If new user: Creates record in `users` table
 8. Redirects to `/caption-generator`
 
@@ -76,11 +76,10 @@ CaptionFlow supports Sign in with Google. This guide walks you through setting u
 - Ensure the Supabase callback URL is in Google's Authorized redirect URIs
 - Format: https://[project-ref].supabase.co/auth/v1/callback
 
-### "User not found" error when creating captions
-- This happens if the user record wasn't created in the database
-- The `/api/auth/callback` route should automatically create the user
-- Check browser console and Vercel logs for errors
-- Make sure the `users` table exists in Supabase
+### User not created in database
+- Check that the `users` table exists in Supabase
+- Verify RLS policies allow inserts
+- Check browser console for errors
 
 ### CORS errors
 - Make sure your domain is in Google's Authorized JavaScript origins

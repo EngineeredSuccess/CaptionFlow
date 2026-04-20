@@ -1,0 +1,44 @@
+# CaptionFlow — AI Assistant Rules
+
+## Project Context
+CaptionFlow is a Next.js 16 SaaS application for AI-powered social media caption generation. 
+It uses Supabase for auth/database, Stripe for payments, OpenAI for AI, Resend for email, and Tailwind CSS + shadcn/ui for the UI.
+
+## Code Conventions
+- Use **TypeScript** for all code. Avoid `any` — use explicit types.
+- Use **Zod** for API request validation.
+- Use **`createClient`** from `@/shared/lib/supabase/server` for server-side Supabase access.
+- Use **`createClient`** from `@/shared/lib/supabase/client` for client-side.
+- Never expose `SUPABASE_SERVICE_ROLE_KEY` on the client side.
+- Prefix unused function parameters with `_` (e.g., `_request: Request`).
+- Use `catch {}` (no binding) for catch blocks where the error isn't used.
+
+## Authentication & Security
+- Always verify user via `supabase.auth.getUser()` in API routes before processing.
+- For Stripe webhooks, verify the signature using `stripe.webhooks.constructEvent()`.
+- Use RLS (Row Level Security) on all tables. Use service-role client only in webhooks/admin scripts.
+- Brand voice queries must filter by `user_id` to prevent IDOR.
+
+## UI/UX Standards
+- Use **shadcn/ui** components from `@/components/ui/`.
+- Use **Tailwind CSS** for styling. Follow the existing design system (rounded-3xl cards, primary color gradients, etc.).
+- Use `lucide-react` for icons.
+- Ensure all JSX text content with special characters uses HTML entities (`&apos;`, `&quot;`, etc.).
+
+## Stripe Integration
+- Price IDs must start with `price_`, not `prod_`.
+- Webhook route: `/api/stripe-webhook` — must use `request.text()` for raw body, NOT `request.json()`.
+- Always pass `userId` and `tier` in checkout session `metadata` AND `subscription_data.metadata`.
+
+## Database
+- Supabase project URL: See `.env.local`
+- Migrations folder: `supabase/migrations/`
+- RPC functions: `reset_daily_caption_count()`, `increment_caption_count(user_uuid)`
+- Daily limit enforcement: Free tier = 10/day via `daily_caption_count` column
+
+## File Structure
+- `app/` — Next.js App Router pages and API routes
+- `features/` — Domain-specific logic (captions, payments, auth, scheduling, social, brand-voice)
+- `shared/` — Cross-cutting utilities (supabase clients, email, rate limiter, types)
+- `components/ui/` — shadcn/ui primitives
+- `supabase/migrations/` — SQL migration files

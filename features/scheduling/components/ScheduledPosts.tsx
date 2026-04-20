@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -58,11 +58,7 @@ export function ScheduledPosts() {
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'scheduled' | 'published' | 'failed'>('scheduled');
 
-    useEffect(() => {
-        fetchScheduled();
-    }, [activeTab]);
-
-    const fetchScheduled = async () => {
+    const fetchScheduled = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await fetch(`/api/schedule-post?status=${activeTab}`);
@@ -75,7 +71,11 @@ export function ScheduledPosts() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [activeTab]);
+
+    useEffect(() => {
+        fetchScheduled();
+    }, [fetchScheduled]);
 
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr);
