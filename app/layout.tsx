@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 import { Navigation } from "@/shared/components/Navigation";
+import { Footer } from "@/shared/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
   description: "Generate engaging social media captions with AI. Train on your brand voice for authentic results. 75% cheaper than EasyGen.",
   verification: {
     other: {
-      "tiktok-developers-site-verification": "3PHlOJgI5byEHPdRM8vDqzxn4nUnbLQH",
+      "tiktok-developers-site-verification": "Rmoe9oi7lAlRkjzZ2iJGMqPSYGUuupRX",
     },
   },
 };
@@ -36,13 +37,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="tiktok-developers-site-verification" content="3PHlOJgI5byEHPdRM8vDqzxn4nUnbLQH" />
+        <meta name="tiktok-developers-site-verification" content="Rmoe9oi7lAlRkjzZ2iJGMqPSYGUuupRX" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} antialiased flex flex-col min-h-screen`}
       >
         <Navigation />
-        {children}
+        <main className="flex-grow">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   );

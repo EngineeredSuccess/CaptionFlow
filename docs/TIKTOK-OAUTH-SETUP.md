@@ -22,9 +22,9 @@ TikTok apps require specific "Products" to be added and approved.
 3.  Add **"Login Kit"**:
     *   This is required for "Log in with TikTok".
     *   It gives access to `user.info.basic`.
-4.  Add **"TikTok API"**:
-    *   This is required for publishing videos.
-    *   It gives access to `video.publish`.
+5.  Add **"TikTok Video API"**:
+    *   This is required for listing videos for DNA Sync.
+    *   It gives access to `video.list`.
 
 ## 3. Configuration
 
@@ -34,12 +34,8 @@ TikTok apps require specific "Products" to be added and approved.
     *   **Production**: `https://captionflow.xyz/api/auth/social/tiktok/callback`
     *   **Staging**: `https://cf.pawelrzepecki.com/api/auth/social/tiktok/callback`
     *   **Local**: `http://localhost:3000/api/auth/social/tiktok/callback`
-3.  **Scopes**: Ensure `user.info.basic` is selected.
-
-### TikTok API (Publishing)
-1.  Go to **"TikTok API"** in the sidebar.
-2.  **Scopes**: Ensure `video.publish` is selected.
-    *   *Note: Publishing permissions usually require a rigorous app review process by TikTok before they work for public users. For development, you might be able to use your own account if added as a tester.*
+3.  **Scopes**: Ensure `user.info.basic`, `video.publish`, and `video.list` are selected.
+    *   *Note: Publishing permissions and Video list permissions usually require a rigorous app review process by TikTok before they work for public users. For development, you might be able to use your own account if added as a tester.*
 
 ## 4. Get Credentials
 
@@ -57,5 +53,6 @@ Add these keys to your **Vercel Project Settings** (and local `.env.local` file)
 
 > **Note**: TikTok uses the term "Client Key", but our code maps it to `TIKTOK_CLIENT_ID`.
 
-## 6. Submit for Review (Later)
-TikTok requires a review process before your app can be used by the public. You will likely need to provide a screencast of the integration working.
+## 6. Submit for Review
+TikTok requires a review process before your app can be used by the public. We have prepared a dedicated guide for this:
+See [TIKTOK-REVIEW-GUIDE.md](TIKTOK-REVIEW-GUIDE.md) for the exact answers and assets needed to pass the review.

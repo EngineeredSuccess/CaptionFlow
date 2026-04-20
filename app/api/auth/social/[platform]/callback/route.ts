@@ -74,6 +74,29 @@ async function fetchPlatformProfile(platform: string, accessToken: string): Prom
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
             const data = await res.json();
+
+            // Fetch recent videos for DNA Sync
+            try {
+                const videoRes = await fetch('https://open.tiktokapis.com/v2/video/list/?fields=video_description', {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ max_count: 5 }),
+                });
+                const videoData = await videoRes.json();
+                if (videoData.data?.videos) {
+                    recentCaptions = videoData.data.videos
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        .filter((v: any) => v.video_description)
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        .map((v: any) => v.video_description);
+                }
+            } catch (err) {
+                console.error('Failed to fetch TikTok videos:', err);
+            }
+
             return { handle: data.data?.user?.display_name || 'TikTok User', platformUserId: data.data?.user?.open_id, recentCaptions };
         }
     } catch (error) {

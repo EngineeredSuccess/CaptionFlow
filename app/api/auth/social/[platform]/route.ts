@@ -33,7 +33,7 @@ const OAUTH_CONFIG: Record<string, {
     tiktok: {
         authUrl: 'https://www.tiktok.com/v2/auth/authorize/',
         tokenUrl: 'https://open.tiktokapis.com/v2/oauth/token/',
-        scopes: ['user.info.basic', 'video.publish'],
+        scopes: ['user.info.basic', 'video.publish', 'video.list'],
         clientIdEnv: 'TIKTOK_CLIENT_ID',
         clientSecretEnv: 'TIKTOK_CLIENT_SECRET',
     },
