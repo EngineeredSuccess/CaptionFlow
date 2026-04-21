@@ -53,7 +53,7 @@ async function fetchPlatformProfile(platform: string, accessToken: string): Prom
                     recentCaptions
                 };
             }
-            return { handle: 'No IG Account Linked', platformUserId: 'none', recentCaptions };
+            return { handle: null, platformUserId: null, recentCaptions: [] };
         }
         if (platform === 'linkedin') {
             const res = await fetch('https://api.linkedin.com/v2/userinfo', {
@@ -217,6 +217,10 @@ export async function GET(
         // Fetch the user's profile from the platform
         const { handle, platformUserId, recentCaptions } = await fetchPlatformProfile(platform, accessToken);
 
+        if (platform === 'instagram' && (!handle || !platformUserId)) {
+            return NextResponse.redirect(new URL('/settings?social_error=no_ig_account', request.url));
+        }
+
         // Extract Profile DNA if we have recent captions
         let profile_dna = {};
         if (recentCaptions.length > 0) {
@@ -273,7 +277,8 @@ ${recentCaptions.map((c, i) => `[${i+1}] ${c}`).join('\n\n')}`;
 
         if (upsertError) {
             console.error('Failed to save connection:', upsertError);
-            return NextResponse.redirect(new URL('/settings?social_error=save_failed', request.url));
+            const errorMsg = encodeURIComponent(upsertError.message || 'database_error');
+            return NextResponse.redirect(new URL(`/settings?social_error=save_failed&msg=${errorMsg}`, request.url));
         }
 
         console.log('Successfully connected:', platform, handle);

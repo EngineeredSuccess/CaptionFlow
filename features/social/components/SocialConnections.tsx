@@ -105,13 +105,14 @@ export function SocialConnections() {
             window.history.replaceState({}, '', '/settings');
             fetchConnections();
         }
-        if (error) {
+            const errorMsg = params.get('msg');
             const errorMessages: Record<string, string> = {
                 denied: 'Authorization was denied. Please try again.',
                 token_failed: 'Failed to connect. Please check your credentials.',
                 not_configured: 'This platform is not configured yet. Contact support.',
                 expired: 'Authorization expired. Please try again.',
-                save_failed: 'Failed to save connection. Please try again.',
+                no_ig_account: 'No Instagram Business account was found linked to your Facebook Page. Please ensure you have a professional account linked correctly.',
+                save_failed: errorMsg ? `Failed to save: ${decodeURIComponent(errorMsg)}` : 'Failed to save connection. Please try again.',
                 missing_code: 'Authorization code was missing. Please try again.',
                 invalid_state: 'Security validation failed. Please try again.',
                 unknown: 'An unexpected error occurred. Please try again.',
