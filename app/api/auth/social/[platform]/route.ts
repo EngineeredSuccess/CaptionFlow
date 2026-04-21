@@ -79,12 +79,17 @@ export async function GET(
         const authParams = new URLSearchParams({
             client_id: clientId,
             redirect_uri: redirectUri,
-            scope: config.scopes.join(' '),
+            scope: platform === 'tiktok' ? config.scopes.join(',') : config.scopes.join(' '),
             response_type: 'code',
             state,
         });
 
         // Platform-specific params
+        if (platform === 'tiktok') {
+            authParams.delete('client_id');
+            authParams.set('client_key', clientId);
+        }
+
         if (platform === 'twitter') {
             authParams.set('code_challenge', 'challenge');
             authParams.set('code_challenge_method', 'plain');
