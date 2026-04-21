@@ -147,7 +147,11 @@ export async function GET(
         }
 
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-        const redirectUri = `${appUrl}/api/auth/social/${platform}/callback`;
+        let redirectUri = `${appUrl}/api/auth/social/${platform}/callback`;
+
+        if (platform === 'tiktok') {
+            redirectUri += '/';
+        }
 
         // Exchange code for token
         const tokenUrl = TOKEN_URLS[platform];

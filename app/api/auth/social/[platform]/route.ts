@@ -69,7 +69,11 @@ export async function GET(
         }
 
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-        const redirectUri = `${appUrl}/api/auth/social/${platform}/callback`;
+        let redirectUri = `${appUrl}/api/auth/social/${platform}/callback`;
+
+        if (platform === 'tiktok') {
+            redirectUri += '/';
+        }
 
         // Build state with user ID for security
         const state = Buffer.from(JSON.stringify({
