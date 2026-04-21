@@ -73,13 +73,13 @@ features/           # Domain-specific logic
 ├── brand-voice/    # Brand voice training
 ├── auth/           # Auth components
 ├── payments/       # Payment components & hooks
-└── scheduling/     # Post scheduling
+├── scheduling/     # Post scheduling
 
 shared/             # Cross-cutting utilities
 ├── lib/            # Supabase clients, email service, rate limiter
 ├── types/          # Global TypeScript types
 ├── config/         # App configuration
-└── components/     # Shared UI components
+├── components/     # Shared UI components
 ```
 
 ## 🔒 Authentication Flow
@@ -101,3 +101,22 @@ All templates are in `shared/lib/email.ts`:
 - `sendBetaInvite(email, inviteCode)` — Beta access
 - `sendUpgradeConfirmation(email, tier)` — After subscription upgrade
 - `sendPasswordReset(email, resetUrl)` — Password reset
+
+---
+
+## Social Media Integration (TikTok V2 / Instagram)
+
+### TikTok Login Kit (V2)
+The integration uses the TikTok V2 API, which has several strict requirements:
+1. **Parameter Names**: Use `client_key` instead of `client_id` in the authorization URL.
+2. **Scope Formatting**: Scopes MUST be comma-separated (e.g., `user.info.basic,video.publish`), not space-separated.
+3. **Redirect URI**: Must match the Developer Portal exactly, INCLUDING a trailing slash (e.g., `.../callback/`).
+4. **Sandbox Errors**: 
+   - `non_sandbox_target`: Means the user is not an approved Sandbox User for the app.
+   - `param_error`: Often means `client_key` or `redirect_uri` mismatch.
+5. **Caching**: Next.js redirects and browser cache can interfere with OAuth updates. Use `Cache-Control: no-store` on OAuth routes.
+
+### Instagram Graph API
+1. **Business Account Required**: The user MUST have an Instagram Professional/Business account linked to a Facebook Page.
+2. **Diagnostics**: The callback route passes a `msg` parameter to `/settings` if Supabase fails (e.g., RLS, constraints), which is then displayed in the UI.
+3. **Database**: Managed in the `social_connections` table with RLS enabled for user security.
