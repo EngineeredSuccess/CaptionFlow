@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/shared/lib/supabase/server';
 
+// Last forced deployment: 2026-04-21 15:59
 // OAuth configuration for each platform
 const OAUTH_CONFIG: Record<string, {
     authUrl: string;
