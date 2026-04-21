@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/shared/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 // GET: List user's social connections
 export async function GET() {
     try {

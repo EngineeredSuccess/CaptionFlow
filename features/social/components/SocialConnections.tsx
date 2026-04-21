@@ -81,7 +81,7 @@ export function SocialConnections() {
 
     const fetchConnections = useCallback(async () => {
         try {
-            const res = await fetch('/api/social-connections');
+            const res = await fetch('/api/social-connections', { cache: 'no-store' });
             const data = await res.json();
             setConnections(data.connections || []);
         } catch (error) {
