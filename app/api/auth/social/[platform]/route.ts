@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/shared/lib/supabase/server';
 
-// Last forced deployment: 2026-04-21 15:59
+export const dynamic = 'force-dynamic';
+
 // OAuth configuration for each platform
 const OAUTH_CONFIG: Record<string, {
     authUrl: string;
@@ -96,7 +97,9 @@ export async function GET(
             authParams.set('code_challenge_method', 'plain');
         }
 
-        return NextResponse.redirect(`${config.authUrl}?${authParams.toString()}`);
+        const redirectResponse = NextResponse.redirect(`${config.authUrl}?${authParams.toString()}`);
+        redirectResponse.headers.set('Cache-Control', 'no-store, max-age=0');
+        return redirectResponse;
     } catch (error) {
         console.error('OAuth init error:', error);
         return NextResponse.json({ error: 'Failed to start OAuth flow' }, { status: 500 });
