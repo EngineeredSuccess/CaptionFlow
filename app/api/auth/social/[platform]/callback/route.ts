@@ -18,7 +18,7 @@ const CLIENT_ENV_KEYS: Record<string, { id: string; secret: string }> = {
 };
 
 // Platform-specific profile fetchers
-async function fetchPlatformProfile(platform: string, accessToken: string): Promise<{ handle: string; platformUserId: string; recentCaptions: string[] }> {
+async function fetchPlatformProfile(platform: string, accessToken: string): Promise<{ handle: string | null; platformUserId: string | null; recentCaptions: string[] }> {
     let recentCaptions: string[] = [];
     try {
         if (platform === 'instagram') {

@@ -105,6 +105,7 @@ export function SocialConnections() {
             window.history.replaceState({}, '', '/settings');
             fetchConnections();
         }
+        if (error) {
             const errorMsg = params.get('msg');
             const errorMessages: Record<string, string> = {
                 denied: 'Authorization was denied. Please try again.',
