@@ -14,7 +14,7 @@ const CLIENT_ENV_KEYS: Record<string, { id: string; secret: string }> = {
     instagram: { id: 'INSTAGRAM_CLIENT_ID', secret: 'INSTAGRAM_CLIENT_SECRET' },
     linkedin: { id: 'LINKEDIN_CLIENT_ID', secret: 'LINKEDIN_CLIENT_SECRET' },
     twitter: { id: 'TWITTER_CLIENT_ID', secret: 'TWITTER_CLIENT_SECRET' },
-    tiktok: { id: 'TIKTOK_CLIENT_ID', secret: 'TIKTOK_CLIENT_SECRET' },
+    tiktok: { id: 'TIKTOK_CLIENT_KEY', secret: 'TIKTOK_CLIENT_SECRET' },
 };
 
 // Platform-specific profile fetchers
