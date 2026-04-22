@@ -30,11 +30,10 @@ It uses Supabase for auth/database, Stripe for payments, OpenAI for AI, Resend f
 - Webhook route: `/api/stripe-webhook` — must use `request.text()` for raw body, NOT `request.json()`.
 - Always pass `userId` and `tier` in checkout session `metadata` AND `subscription_data.metadata`.
 
-## Database
-- Supabase project URL: See `.env.local`
-- Migrations folder: `supabase/migrations/`
-- RPC functions: `reset_daily_caption_count()`, `increment_caption_count(user_uuid)`
-- Daily limit enforcement: Free tier = 10/day via `daily_caption_count` column
+## AI & OpenAI Integration
+- Use **`gpt-4o`** for core generation tasks to ensure maximum quality for Viral Scores and platform-specific optimizations.
+- Enforce **`response_format: { type: 'json_object' }`** for multi-output scenarios.
+- AI responses for captions should follow the established JSON mapping: `{ [platform]: { content: string, hashtags: string[] } }`.
 
 ## File Structure
 - `app/` — Next.js App Router pages and API routes

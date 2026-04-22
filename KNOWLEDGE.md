@@ -63,17 +63,18 @@ app/
 ├── (landing)/       # Public pages (waitlist)
 ├── api/             # Backend API routes
 │   ├── stripe-webhook/    # Stripe event handler
-│   ├── generate-caption/  # Core AI generation
-│   └── ...
+│   ├── generate-caption/  # Multi-platform AI generation (JSON)
+│   └── schedule-post/     # Scheduling engine handler
 ├── pricing/         # Pricing page (public)
 └── page.tsx         # Landing page
 
 features/           # Domain-specific logic
-├── captions/       # Caption generator components
+├── captions/       # Caption generator & Result Cards
 ├── brand-voice/    # Brand voice training
 ├── auth/           # Auth components
 ├── payments/       # Payment components & hooks
-├── scheduling/     # Post scheduling
+├── scheduling/     # Post scheduling calendar logic
+├── social/         # Social Media OAuth Handlers
 
 shared/             # Cross-cutting utilities
 ├── lib/            # Supabase clients, email service, rate limiter
@@ -131,3 +132,36 @@ The integration uses the TikTok V2 API, which has several strict requirements:
 2. **Permissions**: App MUST be set to **"Read and Write and Offline access"** in User Authentication settings.
 3. **App Type**: Choose **"Web App, Native App"**.
 4. **Free Tier**: Limited to 50 tweets/month. Basic tier is needed for professional production.
+
+---
+
+## 🤖 Multi-Platform Generation Engine
+
+### AI Processing
+- **Model**: Primary core uses **GPT-4o** (upgraded from gpt-4o-mini for viral score accuracy).
+- **Output Format**: Uses OpenAI's `json_object` response format.
+- **Logic**: One prompt generates multiple optimized captions simultaneously for all selected platforms.
+- **Mapping**: The backend parses the JSON and saves EACH platform output as a unique row in the `captions` table.
+- **Pricing Metering**: A multi-platform generation action (e.g., 3 platforms at once) increments `daily_caption_count` by only **1 point** per generating click.
+
+### UI Architecture
+- Component: `CaptionResultCard.tsx`
+- Each generated platform receives its own independent card.
+- Viral Scores, Hook Refinements, and Scheduling events are isolated per card.
+
+---
+
+## 📅 Scheduling Engine
+
+### Schema
+Required columns in `captions` table (applied via `20260212_scheduling_engine.sql`):
+- `scheduled_at`: TIMESTAMP (UTC)
+- `scheduled_status`: enum (NULL, 'pending', 'published', 'failed')
+- `publish_platforms`: text[] (array of platforms for cross-posting)
+
+### API Route: `/api/schedule-post`
+- Updates `scheduled_at` and sets `scheduled_status = 'pending'`.
+- Returns verbose DB error messages if migration is missing or RLS violation occurs.
+
+### Multi-Platform Cross-posting
+While results are generated independently per platform card, the scheduling engine supports `publish_platforms` as an array. Current UX focuses on 1-to-1 scheduling (one card -> one scheduled post), but the DB is ready for cross-platform expansion.

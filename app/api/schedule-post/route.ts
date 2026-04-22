@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         if (updateError) {
             console.error('Error scheduling caption:', updateError);
             return NextResponse.json(
-                { error: 'Failed to schedule caption' },
+                { error: `Failed to schedule: ${updateError.message || updateError.details || 'Unknown DB error'}` },
                 { status: 500 }
             );
         }

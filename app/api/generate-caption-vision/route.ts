@@ -147,51 +147,78 @@ ${validatedData.platform
                             type: 'text',
                             text: `Analyze this image and generate an engaging caption.
 
-Format your response exactly like this:
-CAPTION: [the caption text]
-HASHTAGS: [#tag1 #tag2 #tag3 ...] (${validatedData.numHashtags} relevant hashtags)
-
-Make the caption authentic and engaging. The hashtags should be specific to the image content, not generic. Mix popular and niche tags.`,
+You MUST output your response as a valid JSON object. For EACH platform specified (${validatedData.platform.join(', ')}), provide a highly optimized caption and an array of hashtags.
+Format structure exactly like this:
+{
+  "instagram": {
+    "content": "The generated caption text...",
+    "hashtags": ["tag1", "tag2"]
+  },
+  "tiktok": {
+    "content": "The generated caption text...",
+    "hashtags": ["tag1", "tag2"]
+  }
+}
+Where the uppercase key is the literal platform name in lowercase. Generate exactly ${validatedData.numHashtags} relevant hashtags per platform. Make the caption authentic and engaging. Mix popular and niche hashtags. Do not include the '#' symbol in the hashtag array elements.`,
                         },
                     ],
                 },
             ],
+            response_format: { type: 'json_object' },
             temperature: 0.8,
-            max_tokens: 500,
+            max_tokens: 1500,
         });
 
         const aiResponse = response.choices[0].message.content;
+        let generatedData: Record<string, { content: string, hashtags: string[] }> = {};
+        
+        try {
+            generatedData = JSON.parse(aiResponse || '{}');
+        } catch (e) {
+            throw new Error('Failed to parse AI response into JSON');
+        }
 
-        // Parse response
-        const captionMatch = aiResponse?.match(/CAPTION:\s*([\s\S]*?)(?=HASHTAGS:|$)/i);
-        const hashtagsMatch = aiResponse?.match(/HASHTAGS:\s*(.*)/i);
+        const savedCaptions = [];
 
-        const caption = captionMatch ? captionMatch[1].trim() : '';
-        const hashtagsText = hashtagsMatch ? hashtagsMatch[1].trim() : '';
-        const hashtags = hashtagsText
-            .split(/\s+/)
-            .map(tag => tag.replace(/^#/, ''))
-            .filter(tag => tag.length > 0);
+        // Save to database for each requested platform
+        for (const platform of validatedData.platform) {
+            // Sometimes GPT might capitalize the key
+            const platformKey = Object.keys(generatedData).find(k => k.toLowerCase() === platform.toLowerCase());
+            const platformData = platformKey ? generatedData[platformKey] : null;
+            
+            if (!platformData) continue;
+            
+            const { data: savedCaption, error: saveError } = await supabase
+                .from('captions')
+                .insert({
+                    user_id: user.id,
+                    content: platformData.content || '',
+                    hashtags: platformData.hashtags || [],
+                    platform: [platform],
+                    tone: validatedData.tone,
+                    brand_voice_id: validatedData.brandVoiceId || null,
+                    source_type: 'vision',
+                })
+                .select()
+                .single();
 
-        // Save to database
-        const { data: savedCaption, error: saveError } = await supabase
-            .from('captions')
-            .insert({
-                user_id: user.id,
-                content: caption,
-                hashtags: hashtags,
-                platform: validatedData.platform,
+            if (saveError) {
+                console.error(`Error saving vision caption for ${platform}:`, saveError);
+                continue; 
+            }
+            
+            savedCaptions.push({
+                id: savedCaption.id,
+                content: platformData.content || '',
+                hashtags: platformData.hashtags || [],
+                platform: platform,
                 tone: validatedData.tone,
-                brand_voice_id: validatedData.brandVoiceId || null,
-                source_type: 'vision',
-            })
-            .select()
-            .single();
+            });
+        }
 
-        if (saveError) {
-            console.error('Error saving caption:', saveError);
+        if (savedCaptions.length === 0) {
             return NextResponse.json(
-                { error: 'Failed to save caption' },
+                { error: 'Failed to generate captions for selected platforms' },
                 { status: 500 }
             );
         }
@@ -201,13 +228,7 @@ Make the caption authentic and engaging. The hashtags should be specific to the 
 
         return NextResponse.json({
             success: true,
-            caption: {
-                id: savedCaption.id,
-                content: caption,
-                hashtags: hashtags,
-                platform: validatedData.platform,
-                tone: validatedData.tone,
-            },
+            captions: savedCaptions,
             tier: userData.subscription_tier,
             remainingToday:
                 userData.subscription_tier === 'free'
