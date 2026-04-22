@@ -54,3 +54,11 @@ Add the credentials to your Vercel Environment Variables (or `.env.local`):
 
 ## ⚠️ Free Tier Note
 If you are on the **Free** tier of the X API, you are limited to **50 tweets per month** per app. For higher limits, you would need the **Basic** tier ($100/mo).
+
+
+API KEY - OF5OPoYcgOAZTCRguQEhkG66m
+API KEY S - Lx6nGUpn4e3yujtvp3bffDh14wvlgIo9S7i0LEYuvzw2t4dzth
+Bearer - AAAAAAAAAAAAAAAAAAAAAFe89AEAAAAAO6Kf86yssDdiX9wM9e3fflXO7fY%3DAdzuLrJmiX9zdBo0331vkxHqTu8l9GB7Sr9FyTF8v4R8CGtWqc
+
+cliend id - aVJVZXh0UjVhcHhwQzRzOEJXVEg6MTpjaQ
+cliend secret - BnDlgNzqoxDzFgu9JoJ0N5D93K12h3vQYCXWh77C3fhm34TcvW

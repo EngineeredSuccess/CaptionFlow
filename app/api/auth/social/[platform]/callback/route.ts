@@ -67,7 +67,17 @@ async function fetchPlatformProfile(platform: string, accessToken: string): Prom
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
             const data = await res.json();
-            return { handle: `@${data.data.username}`, platformUserId: data.data.id, recentCaptions };
+            
+            if (!res.ok || !data.data) {
+                console.error('Twitter profile fetch failed:', data);
+                return { handle: 'Twitter User', platformUserId: 'unknown', recentCaptions };
+            }
+
+            return { 
+                handle: `@${data.data.username}`, 
+                platformUserId: data.data.id, 
+                recentCaptions 
+            };
         }
         if (platform === 'tiktok') {
             const res = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name', {
@@ -115,10 +125,18 @@ export async function GET(
         const code = url.searchParams.get('code');
         const stateParam = url.searchParams.get('state');
         const errorParam = url.searchParams.get('error');
+        const errorDescription = url.searchParams.get('error_description');
+
+        console.log(`[OAuth Callback] Platform: ${platform}`, { 
+            hasCode: !!code, 
+            hasState: !!stateParam, 
+            error: errorParam,
+            errorDescription 
+        });
 
         if (errorParam) {
-            console.error(`OAuth error for ${platform}:`, errorParam);
-            return NextResponse.redirect(new URL('/settings?social_error=denied', request.url));
+            console.error(`OAuth error for ${platform}:`, errorParam, errorDescription);
+            return NextResponse.redirect(new URL(`/settings?social_error=denied&msg=${encodeURIComponent(errorDescription || errorParam)}`, request.url));
         }
 
         if (!code || !stateParam) {
@@ -183,7 +201,6 @@ export async function GET(
                 grant_type: 'authorization_code',
                 redirect_uri: redirectUri,
                 code_verifier: 'challenge',
-                client_id: clientId,
             });
             headers['Content-Type'] = 'application/x-www-form-urlencoded';
             headers['Authorization'] = `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`;
@@ -208,7 +225,8 @@ export async function GET(
 
         if (!tokenResponse.ok || tokenData.error) {
             console.error(`Token exchange failed for ${platform}:`, tokenData);
-            return NextResponse.redirect(new URL('/settings?social_error=token_failed', request.url));
+            const errorMsg = encodeURIComponent(tokenData.error_description || tokenData.error || 'token_exchange_failed');
+            return NextResponse.redirect(new URL(`/settings?social_error=token_failed&msg=${errorMsg}`, request.url));
         }
 
         const accessToken = tokenData.access_token;
