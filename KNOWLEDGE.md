@@ -120,3 +120,14 @@ The integration uses the TikTok V2 API, which has several strict requirements:
 1. **Business Account Required**: The user MUST have an Instagram Professional/Business account linked to a Facebook Page.
 2. **Diagnostics**: The callback route passes a `msg` parameter to `/settings` if Supabase fails (e.g., RLS, constraints), which is then displayed in the UI.
 3. **Database**: Managed in the `social_connections` table with RLS enabled for user security.
+
+### LinkedIn OAuth 2.0 (OpenID Connect)
+1. **Scopes**: Use `openid`, `profile`, and `w_member_social` for sign-in and personal feed posting.
+2. **Products**: MUST add "Sign In with LinkedIn using OpenID Connect" and "Share on LinkedIn" in the Developer Portal.
+3. **Redirect URI**: Exact path match required (e.g., `https://captionflow.xyz/api/auth/social/linkedin/callback`).
+
+### X (Twitter) OAuth 2.0 (PKCE)
+1. **Flow**: Requires PKCE (`code_challenge` and `code_verifier`). Current implementation uses `plain` method for compatibility.
+2. **Permissions**: App MUST be set to **"Read and Write and Offline access"** in User Authentication settings.
+3. **App Type**: Choose **"Web App, Native App"**.
+4. **Free Tier**: Limited to 50 tweets/month. Basic tier is needed for professional production.
