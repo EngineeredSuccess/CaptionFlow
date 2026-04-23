@@ -12,7 +12,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-import { Loader2, Save, CheckCircle, AlertCircle, Zap } from 'lucide-react';
+import { Loader2, Save, CheckCircle, AlertCircle, Zap, Fingerprint } from 'lucide-react';
+import { SocialDNACard } from '@/features/brand-voice/components/SocialDNACard';
 
 const TONES = [
   { value: 'casual', label: '😎 Casual' },
@@ -40,6 +41,7 @@ export default function BrandVoicePage() {
     example_4?: string;
     example_5?: string;
   } | null>(null);
+  const [socialConnections, setSocialConnections] = useState<any[]>([]);
 
   useEffect(() => {
     fetchBrandVoice();
@@ -69,6 +71,13 @@ export default function BrandVoicePage() {
       if (userResponse.ok) {
         const userData = await userResponse.json();
         setHasPro(userData.user?.subscription_tier !== 'free');
+      }
+
+      // Fetch social connections for DNA
+      const socialResponse = await fetch('/api/social-connections');
+      if (socialResponse.ok) {
+        const socialData = await socialResponse.json();
+        setSocialConnections(socialData.connections || []);
       }
     } catch (err) {
       console.error('Error fetching brand voice:', err);
@@ -140,6 +149,32 @@ export default function BrandVoicePage() {
           Train the AI to capture your unique rhythm, vocabulary, and emotional resonance.
         </p>
       </div>
+
+      {/* Social DNA Section */}
+      {socialConnections.some(conn => conn.profile_dna && Object.keys(conn.profile_dna).length > 0) && (
+        <div className="mb-16 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+              <Fingerprint className="w-6 h-6 text-blue-500" />
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight">Automated Social DNA</h2>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            {socialConnections
+              .filter(conn => conn.profile_dna && Object.keys(conn.profile_dna).length > 0)
+              .map(conn => (
+                <SocialDNACard 
+                  key={conn.id}
+                  platform={conn.platform}
+                  handle={conn.platform_handle}
+                  dna={conn.profile_dna}
+                />
+              ))
+            }
+          </div>
+        </div>
+      )}
 
       {!hasPro && (
         <div className="mb-8 p-6 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 shadow-xl shadow-amber-500/5 rounded-3xl flex items-center gap-4">

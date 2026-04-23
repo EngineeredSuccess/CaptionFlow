@@ -308,6 +308,7 @@ ${recentCaptions.map((c, i) => `[${i+1}] ${c}`).join('\n\n')}`;
 
                 if (aiResponse.choices[0].message.content) {
                     profile_dna = JSON.parse(aiResponse.choices[0].message.content);
+                    profile_dna.source_captions = recentCaptions; // Store the original text samples
                 }
             } catch (err) {
                 console.error('Failed to extract DNA:', err);
