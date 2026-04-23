@@ -18,7 +18,7 @@ const CLIENT_ENV_KEYS: Record<string, { id: string; secret: string }> = {
 };
 
 // Platform-specific profile fetchers
-async function fetchPlatformProfile(platform: string, accessToken: string): Promise<{ handle: string | null; platformUserId: string | null; recentCaptions: string[] }> {
+async function fetchPlatformProfile(platform: string, accessToken: string): Promise<{ handle: string | null; platformUserId: string | null; recentCaptions: string[]; organizations?: Array<{ id: string; name: string }> }> {
     let recentCaptions: string[] = [];
     try {
         if (platform === 'instagram') {
@@ -60,7 +60,49 @@ async function fetchPlatformProfile(platform: string, accessToken: string): Prom
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
             const data = await res.json();
-            return { handle: data.name || data.email || 'LinkedIn User', platformUserId: data.sub, recentCaptions };
+            
+            // Fetch managed organizations (Pages)
+            let organizations: Array<{ id: string; name: string }> = [];
+            try {
+                const orgRes = await fetch('https://api.linkedin.com/rest/organizationAcls?q=roleAssignee&state=APPROVED', {
+                    headers: { 
+                        Authorization: `Bearer ${accessToken}`,
+                        'X-Restli-Protocol-Version': '2.0.0',
+                        'LinkedIn-Version': '202401'
+                    },
+                });
+                const orgData = await orgRes.json();
+                
+                if (orgData.elements && orgData.elements.length > 0) {
+                    // Organization urn format: urn:li:organization:123456
+                    const orgUrns = orgData.elements.map((el: any) => el.organization);
+                    
+                    // The organization endpoint expects URNs in a List parameter
+                    const idsStr = orgUrns.map((urn: string) => encodeURIComponent(urn)).join(',');
+                    const detailsRes = await fetch(`https://api.linkedin.com/rest/organizations?ids=List(${idsStr})`, {
+                        headers: { 
+                            Authorization: `Bearer ${accessToken}`,
+                            'X-Restli-Protocol-Version': '2.0.0',
+                            'LinkedIn-Version': '202401'
+                        },
+                    });
+                    
+                    const detailsData = await detailsRes.json();
+                    if (detailsData.results) {
+                        organizations = Object.keys(detailsData.results).map(key => {
+                            const org = detailsData.results[key];
+                            return {
+                                id: key, // The URN
+                                name: org.localizedName || 'LinkedIn Page'
+                            };
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch LinkedIn organizations:', err);
+            }
+
+            return { handle: data.name || data.email || 'LinkedIn User', platformUserId: data.sub, recentCaptions, organizations };
         }
         if (platform === 'twitter') {
             const res = await fetch('https://api.twitter.com/2/users/me', {
@@ -237,14 +279,15 @@ export async function GET(
             : null;
 
         // Fetch the user's profile from the platform
-        const { handle, platformUserId, recentCaptions } = await fetchPlatformProfile(platform, accessToken);
+        const { handle, platformUserId, recentCaptions, organizations } = await fetchPlatformProfile(platform, accessToken);
 
         if (platform === 'instagram' && (!handle || !platformUserId)) {
             return NextResponse.redirect(new URL('/settings?social_error=no_ig_account', request.url));
         }
 
         // Extract Profile DNA if we have recent captions
-        let profile_dna = {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let profile_dna: any = {};
         if (recentCaptions.length > 0) {
             try {
                 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
@@ -272,6 +315,11 @@ ${recentCaptions.map((c, i) => `[${i+1}] ${c}`).join('\n\n')}`;
             } catch (err) {
                 console.error('Failed to extract DNA:', err);
             }
+        }
+
+        // Add organizations to profile_dna if they exist
+        if (organizations && organizations.length > 0) {
+            profile_dna.managed_organizations = organizations;
         }
 
         // Store the connection using service role (bypasses RLS)

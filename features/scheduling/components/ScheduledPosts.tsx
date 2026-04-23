@@ -15,6 +15,8 @@ import {
     Linkedin,
     Zap,
     Copy,
+    Trash2,
+    Undo2,
 } from 'lucide-react';
 
 interface ScheduledCaption {
@@ -77,8 +79,16 @@ export function ScheduledPosts() {
         fetchScheduled();
     }, [fetchScheduled]);
 
+    const normalizeDate = (dateStr: string) => {
+        // If Supabase returns a timestamp without timezone (no Z or offset), treat it as UTC
+        if (!dateStr.includes('Z') && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+            return new Date(`${dateStr}Z`);
+        }
+        return new Date(dateStr);
+    };
+
     const formatDate = (dateStr: string) => {
-        const date = new Date(dateStr);
+        const date = normalizeDate(dateStr);
         return date.toLocaleDateString('en-US', {
             weekday: 'short',
             month: 'short',
@@ -87,7 +97,7 @@ export function ScheduledPosts() {
     };
 
     const formatTime = (dateStr: string) => {
-        const date = new Date(dateStr);
+        const date = normalizeDate(dateStr);
         return date.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
@@ -96,7 +106,7 @@ export function ScheduledPosts() {
 
     const getRelativeTime = (dateStr: string) => {
         const now = new Date();
-        const date = new Date(dateStr);
+        const date = normalizeDate(dateStr);
         const diff = date.getTime() - now.getTime();
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const days = Math.floor(hours / 24);
@@ -109,6 +119,31 @@ export function ScheduledPosts() {
 
     const copyContent = (content: string) => {
         navigator.clipboard.writeText(content);
+    };
+
+    const handleRevertToDraft = async (id: string) => {
+        try {
+            const res = await fetch('/api/schedule-post', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ captionId: id }),
+            });
+            if (res.ok) fetchScheduled();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Are you sure you want to completely delete this scheduled post?')) return;
+        try {
+            const res = await fetch(`/api/schedule-post?id=${id}`, {
+                method: 'DELETE',
+            });
+            if (res.ok) fetchScheduled();
+        } catch (err) {
+            console.error(err);
+        }
     };
 
     return (
@@ -219,14 +254,34 @@ export function ScheduledPosts() {
                                                 <span className="text-xs text-zinc-400">+{caption.hashtags.length - 5}</span>
                                             )}
                                         </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => copyContent(caption.content)}
-                                            className="opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-                                        >
-                                            <Copy className="w-3 h-3 mr-1" /> Copy
-                                        </Button>
+                                        <div className="flex gap-1.5">
+                                            {activeTab === 'scheduled' && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleRevertToDraft(caption.id)}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/30"
+                                                >
+                                                    <Undo2 className="w-3 h-3 mr-1" /> Revert
+                                                </Button>
+                                            )}
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => copyContent(caption.content)}
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                                            >
+                                                <Copy className="w-3 h-3 mr-1" /> Copy
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleDelete(caption.id)}
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

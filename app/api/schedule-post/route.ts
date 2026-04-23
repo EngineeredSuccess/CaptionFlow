@@ -145,3 +145,85 @@ export async function GET(request: Request) {
         );
     }
 }
+
+// PATCH: Revert a scheduled post to draft
+export async function PATCH(request: Request) {
+    try {
+        const supabase = await createClient();
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { captionId } = body;
+
+        if (!captionId) {
+            return NextResponse.json({ error: 'Caption ID is required' }, { status: 400 });
+        }
+
+        // Revert to draft: clear scheduled_at and set status back to draft
+        const { error } = await supabase
+            .from('captions')
+            .update({
+                scheduled_at: null,
+                scheduled_status: 'draft',
+            })
+            .eq('id', captionId)
+            .eq('user_id', user.id);
+
+        if (error) {
+            return NextResponse.json({ error: 'Failed to revert to draft' }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Patch schedule error:', error);
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}
+
+// DELETE: Completely remove a caption
+export async function DELETE(request: Request) {
+    try {
+        const supabase = await createClient();
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const { searchParams } = new URL(request.url);
+        const captionId = searchParams.get('id');
+
+        if (!captionId) {
+            return NextResponse.json({ error: 'Caption ID is required' }, { status: 400 });
+        }
+
+        const { error } = await supabase
+            .from('captions')
+            .delete()
+            .eq('id', captionId)
+            .eq('user_id', user.id);
+
+        if (error) {
+            return NextResponse.json({ error: 'Failed to delete caption' }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Delete schedule error:', error);
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}
