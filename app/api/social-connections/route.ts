@@ -13,22 +13,27 @@ export async function GET() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const { data: userProfile } = await supabase
+            .from('users')
+            .select('subscription_tier')
+            .eq('id', user.id)
+            .single();
+
         const { data: connections, error } = await supabase
             .from('social_connections')
-            .select('id, platform, platform_handle, connected_at, profile_dna')
+            .select('id, platform, platform_handle, connected_at, profile_dna, target_id')
             .eq('user_id', user.id)
             .order('connected_at', { ascending: false });
-
-        console.log('Fetching connections for user:', user.id);
-        console.log('Found connections:', connections);
-        console.log('Error if any:', error);
 
         if (error) {
             console.error('Error fetching connections:', error);
             return NextResponse.json({ error: 'Failed to fetch connections' }, { status: 500 });
         }
 
-        return NextResponse.json({ connections: connections || [] });
+        return NextResponse.json({ 
+            connections: connections || [],
+            userTier: userProfile?.subscription_tier || 'free'
+        });
     } catch (error) {
         console.error('Social connections GET error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

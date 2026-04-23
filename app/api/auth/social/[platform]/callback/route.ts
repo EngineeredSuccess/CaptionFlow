@@ -64,39 +64,44 @@ async function fetchPlatformProfile(platform: string, accessToken: string): Prom
             // Fetch managed organizations (Pages)
             let organizations: Array<{ id: string; name: string }> = [];
             try {
+                console.log('LinkedIn: Fetching organization ACLs...');
                 const orgRes = await fetch('https://api.linkedin.com/rest/organizationAcls?q=roleAssignee&state=APPROVED', {
                     headers: { 
                         Authorization: `Bearer ${accessToken}`,
                         'X-Restli-Protocol-Version': '2.0.0',
-                        'LinkedIn-Version': '202401'
+                        'LinkedIn-Version': '202404'
                     },
                 });
                 const orgData = await orgRes.json();
+                console.log('LinkedIn ACLs Response:', JSON.stringify(orgData));
                 
                 if (orgData.elements && orgData.elements.length > 0) {
-                    // Organization urn format: urn:li:organization:123456
                     const orgUrns = orgData.elements.map((el: any) => el.organization);
+                    console.log('LinkedIn Found Org URNs:', orgUrns);
                     
-                    // The organization endpoint expects URNs in a List parameter
                     const idsStr = orgUrns.map((urn: string) => encodeURIComponent(urn)).join(',');
                     const detailsRes = await fetch(`https://api.linkedin.com/rest/organizations?ids=List(${idsStr})`, {
                         headers: { 
                             Authorization: `Bearer ${accessToken}`,
                             'X-Restli-Protocol-Version': '2.0.0',
-                            'LinkedIn-Version': '202401'
+                            'LinkedIn-Version': '202404'
                         },
                     });
                     
                     const detailsData = await detailsRes.json();
+                    console.log('LinkedIn Org Details Response:', JSON.stringify(detailsData));
+
                     if (detailsData.results) {
                         organizations = Object.keys(detailsData.results).map(key => {
                             const org = detailsData.results[key];
                             return {
-                                id: key, // The URN
+                                id: key,
                                 name: org.localizedName || 'LinkedIn Page'
                             };
                         });
                     }
+                } else {
+                    console.log('LinkedIn: No organizations found for this user.');
                 }
             } catch (err) {
                 console.error('Failed to fetch LinkedIn organizations:', err);

@@ -16,13 +16,15 @@ import {
     Dna,
     AlertCircle,
 } from 'lucide-react';
+import { LinkedInTargetSelector } from './LinkedInTargetSelector';
 
 interface SocialConnection {
     id: string;
     platform: string;
     platform_handle: string;
     connected_at: string;
-    profile_dna: Record<string, unknown>;
+    profile_dna: any;
+    target_id?: string;
 }
 
 const PLATFORMS = [
@@ -74,6 +76,7 @@ const PLATFORMS = [
 
 export function SocialConnections() {
     const [connections, setConnections] = useState<SocialConnection[]>([]);
+    const [userTier, setUserTier] = useState('free');
     const [loading, setLoading] = useState(true);
     const [disconnecting, setDisconnecting] = useState<string | null>(null);
     const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
@@ -84,6 +87,7 @@ export function SocialConnections() {
             const res = await fetch('/api/social-connections', { cache: 'no-store' });
             const data = await res.json();
             setConnections(data.connections || []);
+            setUserTier(data.userTier || 'free');
         } catch (error) {
             console.error('Failed to fetch connections:', error);
         } finally {
@@ -153,6 +157,24 @@ export function SocialConnections() {
             setNotification({ type: 'error', message: 'Failed to disconnect. Please try again.' });
         } finally {
             setDisconnecting(null);
+        }
+    };
+
+    const handleSaveTarget = async (connectionId: string, targetId: string) => {
+        try {
+            const res = await fetch('/api/social-connections/target', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ connectionId, targetId }),
+            });
+
+            if (res.ok) {
+                setConnections(prev => prev.map(c => 
+                    c.id === connectionId ? { ...c, target_id: targetId } : c
+                ));
+            }
+        } catch (error) {
+            console.error('Save target error:', error);
         }
     };
 
@@ -247,6 +269,20 @@ export function SocialConnections() {
                                                 </Badge>
                                             )}
                                         </div>
+
+                                        {/* LinkedIn Page Selection */}
+                                        {platform.id === 'linkedin' && connection.profile_dna?.managed_organizations?.length > 0 && (
+                                            <div className="pt-2 pb-1 border-t border-blue-100 dark:border-blue-900/30">
+                                                <LinkedInTargetSelector 
+                                                    connectionId={connection.id}
+                                                    managedOrganizations={connection.profile_dna.managed_organizations}
+                                                    defaultTarget={connection.target_id || 'personal'}
+                                                    userTier={userTier}
+                                                    onSave={(targetId) => handleSaveTarget(connection.id, targetId)}
+                                                />
+                                            </div>
+                                        )}
+
                                         <div className="flex items-center justify-between">
                                             <span className="text-xs text-zinc-400">
                                                 Connected {new Date(connection.connected_at).toLocaleDateString()}
