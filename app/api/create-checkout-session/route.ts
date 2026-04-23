@@ -18,11 +18,19 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { priceId, tier } = body;
+    const { tier } = body;
+    let { priceId } = body;
+
+    // Security & Fix: Map tier to priceId on the server side using secret env variables
+    if (tier === 'pro') {
+      priceId = process.env.STRIPE_PRO_PRICE_ID;
+    } else if (tier === 'team') {
+      priceId = process.env.STRIPE_TEAM_PRICE_ID;
+    }
 
     if (!priceId || !tier) {
       return NextResponse.json(
-        { error: 'Price ID and tier are required' },
+        { error: 'Invalid plan selected' },
         { status: 400 }
       );
     }
@@ -57,6 +65,8 @@ export async function POST(request: Request) {
         .eq('id', user.id);
     }
 
+    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -67,8 +77,8 @@ export async function POST(request: Request) {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+      success_url: `${origin}/dashboard?success=true`,
+      cancel_url: `${origin}/pricing?canceled=true`,
       metadata: {
         userId: user.id,
         tier: tier,

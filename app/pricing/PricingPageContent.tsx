@@ -113,7 +113,7 @@ export default function PricingPageContent() {
       return;
     }
 
-    if (!tier.priceId) {
+    if (tier.name === 'Free') {
       // Free tier - already on it
       return;
     }
