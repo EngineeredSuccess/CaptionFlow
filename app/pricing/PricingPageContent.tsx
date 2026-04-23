@@ -63,7 +63,7 @@ const PRICING_TIERS = [
       'Admin controls',
     ],
     notIncluded: [],
-    cta: 'Contact Sales',
+    cta: 'Start Team Trial',
     popular: false,
   },
 ];
