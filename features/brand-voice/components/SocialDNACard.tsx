@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { DNA, Instagram, Linkedin, Twitter, MessageSquare, Quote, Hash } from 'lucide-react';
+import { Dna, Instagram, Linkedin, Twitter, MessageSquare, Quote, Hash } from 'lucide-react';
 
 interface DNAData {
   tone: string;
