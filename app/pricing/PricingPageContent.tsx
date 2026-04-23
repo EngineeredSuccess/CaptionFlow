@@ -46,7 +46,7 @@ const PRICING_TIERS = [
       'Email support',
     ],
     notIncluded: ['Team collaboration'],
-    cta: 'Start Pro Trial',
+    cta: 'Start Pro Plan',
     popular: true,
   },
   {
@@ -63,7 +63,7 @@ const PRICING_TIERS = [
       'Admin controls',
     ],
     notIncluded: [],
-    cta: 'Start Team Trial',
+    cta: 'Start Team Plan',
     popular: false,
   },
 ];
