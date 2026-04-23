@@ -64,13 +64,9 @@ async function fetchPlatformProfile(platform: string, accessToken: string): Prom
             // Fetch managed organizations (Pages)
             let organizations: Array<{ id: string; name: string }> = [];
             try {
-                console.log('LinkedIn: Fetching organization ACLs...');
-                const orgRes = await fetch('https://api.linkedin.com/rest/organizationAcls?q=roleAssignee&state=APPROVED', {
-                    headers: { 
-                        Authorization: `Bearer ${accessToken}`,
-                        'X-Restli-Protocol-Version': '2.0.0',
-                        'LinkedIn-Version': '202404'
-                    },
+                console.log('LinkedIn: Fetching organization ACLs (v2)...');
+                const orgRes = await fetch('https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&state=APPROVED', {
+                    headers: { Authorization: `Bearer ${accessToken}` },
                 });
                 const orgData = await orgRes.json();
                 console.log('LinkedIn ACLs Response:', JSON.stringify(orgData));
@@ -79,27 +75,23 @@ async function fetchPlatformProfile(platform: string, accessToken: string): Prom
                     const orgUrns = orgData.elements.map((el: any) => el.organization);
                     console.log('LinkedIn Found Org URNs:', orgUrns);
                     
-                    const idsStr = orgUrns.map((urn: string) => encodeURIComponent(urn)).join(',');
-                    const detailsRes = await fetch(`https://api.linkedin.com/rest/organizations?ids=List(${idsStr})`, {
-                        headers: { 
-                            Authorization: `Bearer ${accessToken}`,
-                            'X-Restli-Protocol-Version': '2.0.0',
-                            'LinkedIn-Version': '202404'
-                        },
-                    });
-                    
-                    const detailsData = await detailsRes.json();
-                    console.log('LinkedIn Org Details Response:', JSON.stringify(detailsData));
-
-                    if (detailsData.results) {
-                        organizations = Object.keys(detailsData.results).map(key => {
-                            const org = detailsData.results[key];
-                            return {
-                                id: key,
-                                name: org.localizedName || 'LinkedIn Page'
-                            };
+                    const orgsList = [];
+                    for (const urn of orgUrns) {
+                        const id = urn.split(':').pop();
+                        const detailsRes = await fetch(`https://api.linkedin.com/v2/organizations/${id}`, {
+                            headers: { Authorization: `Bearer ${accessToken}` },
                         });
+                        const detailsData = await detailsRes.json();
+                        if (detailsData.localizedName || detailsData.vanityName) {
+                            orgsList.push({
+                                id: urn,
+                                name: detailsData.localizedName || detailsData.vanityName || 'LinkedIn Page'
+                            });
+                        }
                     }
+                    
+                    organizations = orgsList;
+                    console.log('LinkedIn Parsed Organizations:', organizations);
                 } else {
                     console.log('LinkedIn: No organizations found for this user.');
                 }
