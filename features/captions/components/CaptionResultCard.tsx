@@ -333,7 +333,7 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-zinc-400 uppercase">Time</label>
-                      <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} className="h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+                      <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} step="300" className="h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
                     </div>
                     <Button onClick={handleScheduleSubmit} disabled={isScheduling || !scheduleDate || !scheduleTime} className="h-12 px-6 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:opacity-90">
                       {isScheduling ? <Loader2 className="mr-2 w-4 h-4 animate-spin" /> : <CalendarClock className="mr-2 w-4 h-4" />} Confirm
