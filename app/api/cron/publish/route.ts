@@ -18,12 +18,12 @@ export async function GET(request: Request) {
         const { data: postsToPublish, error: fetchError } = await supabase
             .from('captions')
             .select(`
-                id, 
                 content, 
                 hashtags, 
                 publish_platforms, 
                 publish_target_id,
-                user_id
+                user_id,
+                media_url
             `)
             .eq('scheduled_status', 'scheduled')
             .lte('scheduled_at', new Date().toISOString());
@@ -79,12 +79,22 @@ export async function GET(request: Request) {
                             post.publish_target_id || connection.platform_user_id
                         );
                         
-                        if (success) {
-                            atLeastOneSuccess = true;
+                        if (success) atLeastOneSuccess = true;
+                    } 
+                    else if (connection.platform === 'tiktok') {
+                        if (!post.media_url) {
+                            console.log(`Cron: Skipping TikTok publish for ${post.id} - media_url is missing.`);
+                            continue;
                         }
-                    } else {
-                        // Other platforms not fully implemented for text-only yet
-                        console.log(`Cron: Native publishing for ${connection.platform} is pending video support.`);
+                        const success = await publishToTikTok(
+                            post.content,
+                            post.media_url,
+                            connection.access_token
+                        );
+                        if (success) atLeastOneSuccess = true;
+                    }
+                    else {
+                        console.log(`Cron: Native publishing for ${connection.platform} is pending support.`);
                     }
                 }
 
@@ -114,6 +124,46 @@ export async function GET(request: Request) {
 
 async function updatePostStatus(supabase: any, postId: string, status: 'published' | 'failed_api_error') {
     await supabase.from('captions').update({ scheduled_status: status }).eq('id', postId);
+}
+
+async function publishToTikTok(title: string, videoUrl: string, accessToken: string) {
+    try {
+        console.log('Cron: Starting TikTok Publish (init)...');
+        // TikTok publishing is a multi-step process. 
+        // 1. Initialize publish
+        const initRes = await fetch('https://open.tiktokapis.com/v2/post/publish/video/init/', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                post_info: {
+                    title: title,
+                    privacy_level: "PUBLIC_TO_EVERYONE",
+                    disable_comment: false,
+                    disable_duet: false,
+                    disable_stitch: false
+                },
+                source_info: {
+                    source: "PULL_FROM_URL",
+                    video_url: videoUrl
+                }
+            })
+        });
+
+        const initData = await initRes.json();
+        if (!initRes.ok) {
+            console.error('TikTok Init Failed:', JSON.stringify(initData));
+            return false;
+        }
+
+        console.log('TikTok Publish initialized successfully:', initData.data?.publish_id);
+        return true;
+    } catch (e) {
+        console.error('TikTok Publish Exception:', e);
+        return false;
+    }
 }
 
 async function publishToLinkedIn(content: string, hashtags: string[], accessToken: string, targetId: string) {

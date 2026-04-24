@@ -53,6 +53,7 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
   const [showScheduler, setShowScheduler] = useState(false);
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('');
+  const [mediaUrl, setMediaUrl] = useState('');
   const [isScheduling, setIsScheduling] = useState(false);
   const [scheduleSuccess, setScheduleSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -165,6 +166,7 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
           captionId: result.id,
           scheduledAt,
           publishPlatforms: [result.platform],
+          mediaUrl: mediaUrl.trim() || undefined
         }),
       });
       const data = await res.json();
@@ -175,6 +177,7 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
           setScheduleSuccess(false);
           setScheduleDate('');
           setScheduleTime('');
+          setMediaUrl('');
         }, 4000);
       } else {
         setError(data.error || 'Scheduling failed');
@@ -331,11 +334,28 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
                       <label className="text-xs font-bold text-zinc-400 uppercase">Date</label>
                       <input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} min={new Date().toISOString().split('T')[0]} className="h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-400 uppercase">Time</label>
                       <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} step="300" className="h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
                     </div>
-                    <Button onClick={handleScheduleSubmit} disabled={isScheduling || !scheduleDate || !scheduleTime} className="h-12 px-6 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:opacity-90">
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-zinc-400 uppercase flex justify-between">
+                      <span>Media URL (Public direct link)</span>
+                      {(result.platform.toLowerCase() === 'tiktok' || result.platform.toLowerCase() === 'instagram') && (
+                        <span className="text-[10px] text-amber-500 font-bold">Required for {result.platform}</span>
+                      )}
+                    </label>
+                    <input 
+                      type="url" 
+                      value={mediaUrl} 
+                      onChange={(e) => setMediaUrl(e.target.value)} 
+                      placeholder="https://example.com/video.mp4"
+                      className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" 
+                    />
+                    <p className="text-[10px] text-zinc-500 italic">TikTok & Instagram require a public direct link to your video/image file.</p>
+                  </div>
+
+                  <Button onClick={handleScheduleSubmit} disabled={isScheduling || !scheduleDate || !scheduleTime || ((result.platform.toLowerCase() === 'tiktok' || result.platform.toLowerCase() === 'instagram') && !mediaUrl)} className="h-12 px-6 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:opacity-90">
                       {isScheduling ? <Loader2 className="mr-2 w-4 h-4 animate-spin" /> : <CalendarClock className="mr-2 w-4 h-4" />} Confirm
                     </Button>
                   </div>

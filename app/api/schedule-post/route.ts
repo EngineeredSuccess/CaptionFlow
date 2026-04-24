@@ -7,6 +7,7 @@ const requestSchema = z.object({
     scheduledAt: z.string().datetime(),
     publishPlatforms: z.array(z.enum(['instagram', 'tiktok', 'linkedin', 'twitter'])).min(1),
     publishTargetId: z.string().optional(),
+    mediaUrl: z.string().url().optional().or(z.literal('')),
 });
 
 export async function POST(request: Request) {
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
                 scheduled_status: 'scheduled',
                 publish_platforms: validatedData.publishPlatforms,
                 publish_target_id: validatedData.publishTargetId,
+                media_url: validatedData.mediaUrl || null,
             })
             .eq('id', validatedData.captionId)
             .eq('user_id', user.id)
