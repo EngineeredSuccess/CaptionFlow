@@ -373,7 +373,7 @@ async function publishToInstagram(
 async function publishToLinkedIn(content: string, hashtags: string[], accessToken: string, targetId: string) {
     try {
         const fullText = hashtags && hashtags.length > 0 
-            ? `${content}\n\n${hashtags.join(' ')}` 
+            ? `${content}\n\n${hashtags.map(h => `#${h}`).join(' ')}` 
             : content;
 
         // If it starts with urn:li:organization, it's a page. If urn:li:person, personal profile.
