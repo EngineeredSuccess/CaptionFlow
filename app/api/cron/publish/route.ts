@@ -77,7 +77,7 @@ export async function GET(request: Request) {
                             post.content, 
                             post.hashtags, 
                             connection.access_token, 
-                            post.publish_target_id || connection.platform_user_id
+                            post.publish_target_id || connection.target_id || connection.platform_user_id
                         );
                         
                         if (success) atLeastOneSuccess = true;

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Copy, RefreshCw, Zap, Info, CalendarClock, Sparkles, X } from 'lucide-react';
+import { Loader2, Copy, RefreshCw, Zap, Info, CalendarClock, Sparkles, X, Building2, User } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface CaptionResult {
   id: string;
@@ -57,6 +58,29 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
   const [isScheduling, setIsScheduling] = useState(false);
   const [scheduleSuccess, setScheduleSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [connections, setConnections] = useState<any[]>([]);
+  const [selectedTargetId, setSelectedTargetId] = useState<string>('personal');
+
+  // Fetch connections to get LinkedIn Pages
+  useEffect(() => {
+    async function fetchConnections() {
+      try {
+        const res = await fetch('/api/social-connections');
+        const data = await res.json();
+        const linkedinConn = data.connections?.find((c: any) => c.platform === 'linkedin');
+        if (linkedinConn) {
+          setConnections(data.connections);
+          // Default to the global target_id if set
+          if (linkedinConn.target_id) {
+            setSelectedTargetId(linkedinConn.target_id);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch connections for scheduler:', err);
+      }
+    }
+    fetchConnections();
+  }, []);
 
   // Auto-analyze on mount
   useState(() => {
@@ -173,6 +197,7 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
           captionId: result.id,
           scheduledAt,
           publishPlatforms: [result.platform],
+          publishTargetId: result.platform.toLowerCase() === 'linkedin' ? selectedTargetId : undefined,
           mediaUrl: mediaUrl.trim() || undefined
         }),
       });
@@ -366,6 +391,37 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
                         />
                       </div>
                     </div>
+
+                    {/* LinkedIn Target Selection Override */}
+                    {result.platform.toLowerCase() === 'linkedin' && userTier !== 'free' && (
+                      <div className="space-y-2 p-3 bg-white/50 dark:bg-zinc-800/50 rounded-xl border border-zinc-100 dark:border-zinc-700">
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase">Publish To</label>
+                        <Select value={selectedTargetId} onValueChange={setSelectedTargetId}>
+                          <SelectTrigger className="h-10 w-full bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+                            <SelectValue placeholder="Choose target..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="personal">
+                              <div className="flex items-center gap-2">
+                                <User className="w-3.5 h-3.5 text-zinc-400" />
+                                <span className="text-sm">Personal Profile</span>
+                              </div>
+                            </SelectItem>
+                            {connections
+                              .find(c => c.platform === 'linkedin')
+                              ?.profile_dna?.managed_organizations?.map((org: any) => (
+                                <SelectItem key={org.id} value={org.id}>
+                                  <div className="flex items-center gap-2">
+                                    <Building2 className="w-3.5 h-3.5 text-zinc-400" />
+                                    <span className="text-sm">{org.name}</span>
+                                  </div>
+                                </SelectItem>
+                              ))
+                            }
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
 
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-zinc-400 uppercase flex justify-between">
