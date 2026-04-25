@@ -102,6 +102,20 @@ export async function GET(request: Request) {
                         );
                         if (success) atLeastOneSuccess = true;
                     }
+                    else if (connection.platform === 'instagram') {
+                        if (!post.media_url) {
+                            console.log(`Cron: Skipping Instagram publish for ${post.id} - media_url is missing.`);
+                            continue;
+                        }
+                        const success = await publishToInstagram(
+                            post.content,
+                            post.hashtags,
+                            post.media_url,
+                            connection.access_token,
+                            connection.platform_user_id
+                        );
+                        if (success) atLeastOneSuccess = true;
+                    }
                     else {
                         console.log(`Cron: Native publishing for ${connection.platform} is pending support.`);
                     }
@@ -203,6 +217,84 @@ async function publishToTwitter(content: string, hashtags: string[], accessToken
         return true;
     } catch (e) {
         console.error('Twitter/X Publish Exception:', e);
+        return false;
+    }
+}
+
+async function publishToInstagram(
+    content: string,
+    hashtags: string[],
+    mediaUrl: string,
+    accessToken: string,
+    igUserId: string
+) {
+    try {
+        const caption = hashtags && hashtags.length > 0
+            ? `${content}\n\n${hashtags.map(h => `#${h}`).join(' ')}`
+            : content;
+
+        // Detect if URL is a video based on extension
+        const isVideo = /\.(mp4|mov|avi|m4v)$/i.test(mediaUrl);
+
+        // Step 1: Create media container
+        const containerPayload: Record<string, string> = {
+            caption,
+            access_token: accessToken,
+        };
+
+        if (isVideo) {
+            containerPayload.media_type = 'REELS';
+            containerPayload.video_url = mediaUrl;
+        } else {
+            containerPayload.image_url = mediaUrl;
+        }
+
+        const containerRes = await fetch(
+            `https://graph.facebook.com/v18.0/${igUserId}/media`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(containerPayload),
+            }
+        );
+
+        const containerData = await containerRes.json();
+        if (!containerRes.ok || !containerData.id) {
+            console.error('Instagram Container Creation Failed:', JSON.stringify(containerData));
+            return false;
+        }
+
+        const creationId = containerData.id;
+        console.log(`Instagram: Container created (id: ${creationId}). Publishing...`);
+
+        // For videos, wait briefly for processing (Instagram needs time to process video)
+        if (isVideo) {
+            await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+
+        // Step 2: Publish the container
+        const publishRes = await fetch(
+            `https://graph.facebook.com/v18.0/${igUserId}/media_publish`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    creation_id: creationId,
+                    access_token: accessToken,
+                }),
+            }
+        );
+
+        const publishData = await publishRes.json();
+        if (!publishRes.ok || !publishData.id) {
+            console.error('Instagram Publish Failed:', JSON.stringify(publishData));
+            return false;
+        }
+
+        console.log('Instagram: Post published successfully, id:', publishData.id);
+        return true;
+    } catch (e) {
+        console.error('Instagram Publish Exception:', e);
         return false;
     }
 }
