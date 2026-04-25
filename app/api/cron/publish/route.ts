@@ -94,6 +94,14 @@ export async function GET(request: Request) {
                         );
                         if (success) atLeastOneSuccess = true;
                     }
+                    else if (connection.platform === 'twitter') {
+                        const success = await publishToTwitter(
+                            post.content,
+                            post.hashtags,
+                            connection.access_token
+                        );
+                        if (success) atLeastOneSuccess = true;
+                    }
                     else {
                         console.log(`Cron: Native publishing for ${connection.platform} is pending support.`);
                     }
@@ -163,6 +171,38 @@ async function publishToTikTok(title: string, videoUrl: string, accessToken: str
         return true;
     } catch (e) {
         console.error('TikTok Publish Exception:', e);
+        return false;
+    }
+}
+
+async function publishToTwitter(content: string, hashtags: string[], accessToken: string) {
+    try {
+        // Build tweet text: content + hashtags, capped at 280 chars
+        const hashtagStr = hashtags && hashtags.length > 0
+            ? '\n\n' + hashtags.slice(0, 5).map(h => `#${h}`).join(' ')
+            : '';
+        const fullText = (content + hashtagStr).slice(0, 280);
+
+        const res = await fetch('https://api.twitter.com/2/tweets', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: fullText }),
+        });
+
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error('Twitter/X Publish Failed:', errorText);
+            return false;
+        }
+
+        const data = await res.json();
+        console.log('Twitter/X Tweet published, id:', data.data?.id);
+        return true;
+    } catch (e) {
+        console.error('Twitter/X Publish Exception:', e);
         return false;
     }
 }
