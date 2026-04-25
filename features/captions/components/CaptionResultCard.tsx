@@ -155,10 +155,17 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
 
   const handleScheduleSubmit = async () => {
     if (!scheduleDate || !scheduleTime) return;
+    
+    // Ensure time is rounded to 5 mins (safeguard)
+    const [hours, mins] = scheduleTime.split(':').map(Number);
+    const roundedMins = Math.round(mins / 5) * 5;
+    const finalMins = roundedMins >= 60 ? 55 : roundedMins; // Prevent 60
+    const formattedTime = `${hours.toString().padStart(2, '0')}:${finalMins.toString().padStart(2, '0')}`;
+
     setIsScheduling(true);
     setError(null);
     try {
-      const scheduledAt = new Date(`${scheduleDate}T${scheduleTime}:00`).toISOString();
+      const scheduledAt = new Date(`${scheduleDate}T${formattedTime}:00`).toISOString();
       const res = await fetch('/api/schedule-post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -337,7 +344,20 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-zinc-400 uppercase">Time</label>
-                        <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} step="300" className="h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+                        <input 
+                          type="time" 
+                          value={scheduleTime} 
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (!val) return setScheduleTime('');
+                            const [h, m] = val.split(':');
+                            const roundedM = Math.round(parseInt(m) / 5) * 5;
+                            const finalM = roundedM >= 60 ? 55 : roundedM;
+                            setScheduleTime(`${h}:${finalM.toString().padStart(2, '0')}`);
+                          }} 
+                          step="300" 
+                          className="h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" 
+                        />
                       </div>
                     </div>
 
