@@ -95,13 +95,10 @@ export async function GET(request: Request) {
                         if (success) atLeastOneSuccess = true;
                     }
                     else if (connection.platform === 'twitter') {
-                        const success = await publishToTwitter(
-                            post.content,
-                            post.hashtags,
-                            connection,
-                            supabase
-                        );
-                        if (success) atLeastOneSuccess = true;
+                        // Twitter API Free Tier does not allow posting. 
+                        // Skipping for now to avoid persistent 403 errors.
+                        console.log(`Cron: Skipping Twitter publish for ${post.id} - Platform requires API upgrade ($100/mo).`);
+                        continue; 
                     }
                     else if (connection.platform === 'instagram') {
                         if (!post.media_url) {

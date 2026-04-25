@@ -330,6 +330,12 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
                 <p className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
                   <CalendarClock className="w-4 h-4" /> Schedule on {PLATFORM_LABELS[result.platform.toLowerCase()] || result.platform}
                 </p>
+                {result.platform.toLowerCase() === 'twitter' && (
+                  <div className="text-[11px] leading-relaxed font-bold text-amber-600 dark:text-amber-400 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200/50 flex gap-2">
+                    <Info className="w-4 h-4 shrink-0" />
+                    <span>UWAGA: Automatyczna publikacja na X (Twitter) jest obecnie ograniczona przez limity API platformy. Post zostanie zapisany, ale może wymagać ręcznego wklejenia.</span>
+                  </div>
+                )}
                 {error && <div className="text-sm font-bold text-red-500 p-2 bg-red-50 rounded-lg">{error}</div>}
                 {scheduleSuccess ? (
                   <div className="flex items-center gap-3 text-sm text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-xl">
