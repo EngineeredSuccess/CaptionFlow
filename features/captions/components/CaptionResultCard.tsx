@@ -177,6 +177,26 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
     navigator.clipboard.writeText(text);
   };
 
+  const formatMediaUrl = (url: string) => {
+    if (!url) return '';
+    let formatted = url.trim();
+    
+    // Google Drive conversion (view/edit to direct download)
+    if (formatted.includes('drive.google.com')) {
+      const match = formatted.match(/\/d\/(.+?)\/([a-z?=&]+)?/);
+      if (match && match[1]) {
+        formatted = `https://drive.google.com/uc?export=download&id=${match[1]}`;
+      }
+    }
+    
+    // Dropbox conversion (preview to direct download)
+    if (formatted.includes('dropbox.com')) {
+      formatted = formatted.replace('dl=0', 'dl=1');
+    }
+    
+    return formatted;
+  };
+
   const handleScheduleSubmit = async () => {
     if (!scheduleDate || !scheduleTime) return;
     
@@ -198,7 +218,7 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
           scheduledAt,
           publishPlatforms: [result.platform],
           publishTargetId: result.platform.toLowerCase() === 'linkedin' ? selectedTargetId : undefined,
-          mediaUrl: mediaUrl.trim() || undefined
+          mediaUrl: formatMediaUrl(mediaUrl)
         }),
       });
       const data = await res.json();
@@ -425,7 +445,7 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
 
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-zinc-400 uppercase flex justify-between">
-                        <span>Media URL (Public direct link)</span>
+                        <span>Media URL (Drive, Dropbox or Direct Link)</span>
                         {(result.platform.toLowerCase() === 'tiktok' || result.platform.toLowerCase() === 'instagram') && (
                           <span className="text-[10px] text-amber-500 font-bold">Required for {result.platform}</span>
                         )}
@@ -434,10 +454,12 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
                         type="url" 
                         value={mediaUrl} 
                         onChange={(e) => setMediaUrl(e.target.value)} 
-                        placeholder="https://example.com/video.mp4"
+                        placeholder="Wklej link z Google Drive lub Dropbox"
                         className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" 
                       />
-                      <p className="text-[10px] text-zinc-500 italic">TikTok & Instagram require a public direct link to your video/image file.</p>
+                      <p className="text-[10px] text-zinc-500 italic">
+                        Wklej dowolny link. Linki z <strong>Google Drive</strong> i <strong>Dropbox</strong> zostaną automatycznie poprawione.
+                      </p>
                     </div>
 
                     <Button onClick={handleScheduleSubmit} disabled={isScheduling || !scheduleDate || !scheduleTime || ((result.platform.toLowerCase() === 'tiktok' || result.platform.toLowerCase() === 'instagram') && !mediaUrl)} className="w-full h-12 px-6 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:opacity-90">
