@@ -17,7 +17,7 @@
 | Rate Limiting | Upstash Redis    | Optional, for API rate limiting |
 
 ## Domain & Deployment
-- **Production**: `https://captionflow.xyz` (Vercel, branch: `main`)
+- **Production**: `https://captionflow.xyz` (Vercel, branch: `master`)
 - **Staging**: `https://cf.pawelrzepecki.com` (Vercel, branch: `develop`)
 - **GitHub**: `https://github.com/EngineeredSuccess/CaptionFlow`
 
@@ -37,8 +37,9 @@
 - **Secret**: `STRIPE_WEBHOOK_SECRET` env var
 
 ### ⚠️ Known Issues (as of 2026-04-20)
-1. **`STRIPE_PRO_PRICE_ID` / `STRIPE_TEAM_PRICE_ID`** in `.env.local` are set to **product IDs** (`prod_...`), not **price IDs** (`price_...`). The checkout session creation uses these as `price` in `line_items`, which requires a `price_xxx` ID. **This will cause Stripe checkout to fail.**
-2. **`WEBHOOK_END_URL`** in `.env.local` is set to `https://cf.pawelrzepecki.com/stripe/checkout/webhook` which doesn't match the actual route at `/api/stripe-webhook`. This env var doesn't appear to be used in code but is misleading.
+3. **Vercel Hobby Cron Limit**: The project uses an external cron provider (e.g., cron-job.org) to hit `/api/cron/publish` every 5 minutes, as Vercel Hobby tier limits native crons to 1/day.
+4. **PostgREST Schema Cache**: After running `ALTER TABLE` in Supabase, the API might return "column not found" until the schema cache is refreshed or the Vercel deployment is redeployed.
+5. **Media Requirements**: TikTok and Instagram require a valid `media_url` to publish. LinkedIn supports text-only.
 
 ## Database Schema (key tables)
 | Table | Purpose | RLS |
@@ -73,6 +74,8 @@
 | `/api/waitlist` | POST | Waitlist signup | ❌ |
 | `/api/analytics/*` | Various | Usage analytics | ✅ |
 | `/api/social-connections` | Various | Social OAuth management | ✅ |
+| `/api/cron/publish` | GET | Automated publishing worker (Requires `CRON_SECRET`) | Secret |
+| `/api/social-connections/target` | GET | Fetch LinkedIn Page/Person URNs | ✅ |
 
 ## Key Patterns
 - **Authentication**: Supabase Auth via `createClient()` → `supabase.auth.getUser()`
@@ -80,3 +83,5 @@
 - **Daily Limits**: Free tier = 10/day, enforced via `daily_caption_count` + DB trigger
 - **Brand Voice**: Users provide 5 example captions → injected into OpenAI system prompt
 - **Email**: `emailService` singleton in `shared/lib/email.ts` using Resend
+- **Time Snapping**: Scheduler in `CaptionResultCard` snaps time to 5-minute intervals to align with cron execution.
+- **Master Branch Policy**: `master` is now the primary branch for production to align with the environment's legacy setup. Always merge `main` to `master` before pushing to Vercel.

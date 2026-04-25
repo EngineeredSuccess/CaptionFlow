@@ -17,6 +17,8 @@ import {
     Copy,
     Trash2,
     Undo2,
+    Pencil,
+    X,
 } from 'lucide-react';
 
 interface ScheduledCaption {
@@ -59,6 +61,10 @@ export function ScheduledPosts() {
     const [captions, setCaptions] = useState<ScheduledCaption[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'scheduled' | 'published' | 'failed'>('scheduled');
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editDate, setEditDate] = useState('');
+    const [editTime, setEditTime] = useState('');
+    const [isUpdating, setIsUpdating] = useState(false);
 
     const fetchScheduled = useCallback(async () => {
         setIsLoading(true);
@@ -143,6 +149,43 @@ export function ScheduledPosts() {
             if (res.ok) fetchScheduled();
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const handleEditClick = (caption: ScheduledCaption) => {
+        const date = normalizeDate(caption.scheduled_at);
+        setEditingId(caption.id);
+        setEditDate(date.toISOString().split('T')[0]);
+        
+        // Ensure time is rounded to 5 mins for consistent display
+        const hours = date.getHours().toString().padStart(2, '0');
+        const mins = (Math.round(date.getMinutes() / 5) * 5);
+        const finalMins = mins >= 60 ? '55' : mins.toString().padStart(2, '0');
+        setEditTime(`${hours}:${finalMins}`);
+    };
+
+    const handleSaveEdit = async (caption: ScheduledCaption) => {
+        setIsUpdating(true);
+        try {
+            const scheduledAt = new Date(`${editDate}T${editTime}:00`).toISOString();
+            const res = await fetch('/api/schedule-post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    captionId: caption.id,
+                    scheduledAt,
+                    publishPlatforms: caption.publish_platforms || caption.platform,
+                    mediaUrl: (caption as any).media_url || undefined
+                }),
+            });
+            if (res.ok) {
+                setEditingId(null);
+                fetchScheduled();
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -254,34 +297,79 @@ export function ScheduledPosts() {
                                                 <span className="text-xs text-zinc-400">+{caption.hashtags.length - 5}</span>
                                             )}
                                         </div>
-                                        <div className="flex gap-1.5">
-                                            {activeTab === 'scheduled' && (
+
+                                        {editingId === caption.id ? (
+                                            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2">
+                                                <input 
+                                                    type="date" 
+                                                    value={editDate} 
+                                                    onChange={(e) => setEditDate(e.target.value)}
+                                                    className="h-9 px-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-bold"
+                                                />
+                                                <input 
+                                                    type="time" 
+                                                    value={editTime} 
+                                                    step="300"
+                                                    onChange={(e) => setEditTime(e.target.value)}
+                                                    className="h-9 px-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-bold"
+                                                />
+                                                <Button 
+                                                    size="sm" 
+                                                    disabled={isUpdating}
+                                                    onClick={() => handleSaveEdit(caption)}
+                                                    className="h-9 px-4 rounded-lg text-xs font-bold"
+                                                >
+                                                    {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
+                                                </Button>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm" 
+                                                    onClick={() => setEditingId(null)}
+                                                    className="h-9 w-9 p-0 rounded-lg"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex gap-1.5">
+                                                {activeTab === 'scheduled' && (
+                                                    <>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleEditClick(caption)}
+                                                            className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                                                        >
+                                                            <Pencil className="w-3 h-3 mr-1" /> Edit
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleRevertToDraft(caption.id)}
+                                                            className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/30"
+                                                        >
+                                                            <Undo2 className="w-3 h-3 mr-1" /> Revert
+                                                        </Button>
+                                                    </>
+                                                )}
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => handleRevertToDraft(caption.id)}
-                                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/30"
+                                                    onClick={() => copyContent(caption.content)}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs"
                                                 >
-                                                    <Undo2 className="w-3 h-3 mr-1" /> Revert
+                                                    <Copy className="w-3 h-3 mr-1" /> Copy
                                                 </Button>
-                                            )}
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => copyContent(caption.content)}
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-                                            >
-                                                <Copy className="w-3 h-3 mr-1" /> Copy
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleDelete(caption.id)}
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                            </Button>
-                                        </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleDelete(caption.id)}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                                >
+                                                    <Trash2 className="w-3 h-3" />
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}

@@ -486,6 +486,24 @@
 6. **One-Click Copy Fix** (P0)
 7. **One-Click Remix** (P1) - *Growth Loop*
 
+Oto 3 mikrozmiany, które drastycznie podniosą nam konwersję:
+
+GIF / Krótkie Wideo: Centralnie pod nagłówkiem "Captions That Sound Like You..." (lub zaraz pod przyciskiem) wrzucasz dynamicznego, 5-sekundowego GIFa. Co ma pokazywać?
+
+Sekunda 1: Ktoś wpisuje w pole "Main idea" jedno, leniwe zdanie (np. „Nowa kawa w biurze, jest super”).
+
+Sekunda 2: Kursor wybiera ton "😎 Casual" i klika "Instagram".
+
+Sekunda 4: Magia! Wypluwa genialny, długi, angażujący opis z emotikonami i hookiem.
+
+Dlaczego to działa: Buduje natychmiastowe pożądanie ("Wow, z jednego zdania zrobił coś takiego w sekundę? Dobra, daję tego maila").
+
+Microcopy pod przyciskiem: Tuż pod niebieskim przyciskiem "Start Creating Free" dodaj malutki, szary tekst:
+
+"No credit card required. We just hate bots." (To idealnie spina się z naszą narracją z Reddita).
+
+Social Proof w pigułce: Jeśli masz już chociaż 3-4 znajomych lub beta-testerów, którzy użyli narzędzia, wrzuć na sam dół strony krótką sekcję w stylu: "Uratowaliśmy już X godzin wpatrywania się w pusty ekran". Zwykła liczba robi robotę.
+
 ### Phase 2: Growth Features (Month 2-3)
 **Goal**: Increase virality and retention
 

@@ -430,6 +430,32 @@ redirectTo: `${window.location.origin}/api/auth/callback`
 **Security**: Add a `Required Reviewer` to the production environment in GitHub Actions.
 **Benefit**: Prevents accidental deployments to `main` from going live before a final check on the staging preview.
 
+### Issue 19: Vercel Hobby Cron Limitations
+**Problem**: Deployment fails with "Hobby accounts are limited to daily cron jobs" when using a 5-minute schedule in `vercel.json`.
+**Solution**: Remove the `crons` section from `vercel.json` and use an external provider (like Cron-job.org) to ping the `/api/cron/publish` endpoint.
+**Key Learning**: Vercel Hobby is highly restrictive for scheduled tasks; external triggers are the best free workaround.
+
+### Issue 20: Missing SELECT Fields vs TypeScript
+**Problem**: Build error: "Property 'id' does not exist on type...".
+**Root Cause**: Adding a new field to a Supabase `.select()` often leads to accidentally deleting essential fields like `id`.
+**Solution**: Always double-check that all fields used in the function logic (especially IDs used for updates) are included in the string-literal select.
+**Key Learning**: Run `npx tsc --noEmit` locally before every push to catch these "silent" logic regressions.
+
+### Issue 21: JSX Structural Errors (Unterminated regexp)
+**Problem**: Turbopack build failure: "Unterminated regexp literal".
+**Root Cause**: Unbalanced `<div>` tags or missing colons in ternary operators `() ? () : ()` cause the parser to lose track of the JSX context.
+**Solution**: Use an IDE with auto-formatting or carefully verify indentation when adding complex nested logic (like the Media URL input).
+
+### Issue 22: Time Granularity & Browser Inconsistency
+**Problem**: Native `<input type="time" step="300" />` doesn't strictly prevent users from typing "13:12" in some browsers.
+**Solution**: Implement a "Snapping" logic in `onChange` and `onSubmit` that rounds minutes to the nearest 5-minute interval (0, 5, 10, etc.).
+**Benefit**: Guarantees alignment with a 5-minute Cron Job execution window.
+
+### Issue 23: Master vs Main Syncing
+**Problem**: Pushes to `main` weren't triggering Vercel deployments.
+**Root Cause**: Vercel was configured to track the `master` branch (legacy default), while the agent was pushing to `main`.
+**Solution**: Synchronize branches using `git merge main` into `master` and push to both to ensure consistency.
+
 ---
 
 ## Conclusion
@@ -438,5 +464,6 @@ The main challenges were:
 2. **OAuth flow cookie handling** - Easy to miss
 3. **Drafting a scalable CI/CD strategy** - Moving from "push to deploy" to "verify then deploy".
 4. **Designing for 'premium'** - Small details like fonts (Outfit) and shadows make a huge difference.
+5. **Hobby Tier Resourcefulness** - Using external crons and branch syncing to bypass hosting platform limitations.
 
 Always test on staging before hitting production!
