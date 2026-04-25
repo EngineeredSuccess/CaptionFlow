@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/shared/lib/supabase/server';
+import { createServiceRoleClient } from '@/shared/lib/supabase/service-role';
 
 // Opt out of caching
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
             return new NextResponse('Unauthorized', { status: 401 });
         }
 
-        const supabase = await createClient();
+        const supabase = createServiceRoleClient();
 
         // 2. Fetch past-due scheduled posts
         const { data: postsToPublish, error: fetchError } = await supabase
