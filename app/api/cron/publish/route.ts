@@ -98,7 +98,8 @@ export async function GET(request: Request) {
                         const success = await publishToTwitter(
                             post.content,
                             post.hashtags,
-                            connection.access_token
+                            connection,
+                            supabase
                         );
                         if (success) atLeastOneSuccess = true;
                     }
@@ -189,22 +190,90 @@ async function publishToTikTok(title: string, videoUrl: string, accessToken: str
     }
 }
 
-async function publishToTwitter(content: string, hashtags: string[], accessToken: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function refreshTwitterToken(connection: any, supabase: any): Promise<string | null> {
+    try {
+        if (!connection.refresh_token) {
+            console.error('Twitter: No refresh_token stored — user must reconnect their account.');
+            return null;
+        }
+
+        const clientId = process.env.TWITTER_CLIENT_ID!;
+        const clientSecret = process.env.TWITTER_CLIENT_SECRET!;
+        const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
+        const res = await fetch('https://api.twitter.com/2/oauth2/token', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${basicAuth}`,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                grant_type: 'refresh_token',
+                refresh_token: connection.refresh_token,
+            }).toString(),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.access_token) {
+            console.error('Twitter token refresh failed:', JSON.stringify(data));
+            return null;
+        }
+
+        const newAccessToken = data.access_token;
+        const newRefreshToken = data.refresh_token || connection.refresh_token;
+        const expiresIn = data.expires_in;
+        const tokenExpiresAt = expiresIn
+            ? new Date(Date.now() + expiresIn * 1000).toISOString()
+            : null;
+
+        // Persist the new tokens to the DB
+        await supabase
+            .from('social_connections')
+            .update({
+                access_token: newAccessToken,
+                refresh_token: newRefreshToken,
+                token_expires_at: tokenExpiresAt,
+                updated_at: new Date().toISOString(),
+            })
+            .eq('user_id', connection.user_id)
+            .eq('platform', 'twitter');
+
+        console.log('Twitter: Token refreshed successfully.');
+        return newAccessToken;
+    } catch (e) {
+        console.error('Twitter token refresh exception:', e);
+        return null;
+    }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function publishToTwitter(content: string, hashtags: string[], connection: any, supabase: any) {
     try {
         // Build tweet text: content + hashtags, capped at 280 chars
         const hashtagStr = hashtags && hashtags.length > 0
-            ? '\n\n' + hashtags.slice(0, 5).map(h => `#${h}`).join(' ')
+            ? '\n\n' + hashtags.slice(0, 5).map((h: string) => `#${h}`).join(' ')
             : '';
         const fullText = (content + hashtagStr).slice(0, 280);
 
-        const res = await fetch('https://api.twitter.com/2/tweets', {
+        const tryPost = async (token: string) => fetch('https://api.twitter.com/2/tweets', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ text: fullText }),
         });
+
+        let res = await tryPost(connection.access_token);
+
+        // Auto-refresh on 401 and retry once
+        if (res.status === 401) {
+            console.log('Twitter: Got 401 — attempting token refresh...');
+            const newToken = await refreshTwitterToken(connection, supabase);
+            if (!newToken) return false;
+            res = await tryPost(newToken);
+        }
 
         if (!res.ok) {
             const errorData = await res.json().catch(() => null);
