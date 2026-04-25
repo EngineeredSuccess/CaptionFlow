@@ -64,7 +64,7 @@ export default function LandingPage() {
               <div className="flex items-center gap-6 justify-center lg:justify-start text-sm font-medium text-zinc-500">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                  <span>No credit card required</span>
+                  <span>No credit card required. We just hate bots.</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -88,26 +88,10 @@ export default function LandingPage() {
                   </Badge>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Input Prompt</p>
-                    <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300">
-                      Exploring a hidden coffee shop in Kyoto ☕✨
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-xs font-bold text-primary uppercase tracking-wider">CaptionFlow AI</p>
-                    <div className="bg-primary/5 dark:bg-primary/10 p-5 rounded-xl border border-primary/10 dark:border-primary/20">
-                      <p className="text-zinc-900 dark:text-zinc-100 font-medium mb-3">
-                        Tucked away in the quiet streets of Kyoto... Found this little slice of caffeine heaven. 🇯🇵☕ Sometimes the best journey is the one you didn&apos;t plan.
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="text-primary text-sm font-semibold">#kyoto</span>
-                        <span className="text-primary text-sm font-semibold">#coffeewanderer</span>
-                        <span className="text-primary text-sm font-semibold">#hiddengems</span>
-                      </div>
-                    </div>
+                <div className="space-y-6 relative overflow-hidden rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50">
+                  {/* Generated Demo Visual */}
+                  <div className="aspect-video relative flex items-center justify-center">
+                     <img src="/hero-demo.png" alt="CaptionFlow AI Generation Demo" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity duration-300" />
                   </div>
                 </div>
 
@@ -355,6 +339,18 @@ export default function LandingPage() {
               <span>No Card Needed</span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Global Social Proof */}
+      <section className="py-20 bg-zinc-50 dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-50 mb-6">
+            Uratowaliśmy już <span className="text-primary">1,240+ godzin</span> wpatrywania się w pusty ekran.
+          </h2>
+          <p className="text-lg text-zinc-500 dark:text-zinc-400">
+            Dołącz do 2,400+ twórców, którzy zautomatyzowali swój proces pisania i odzyskali czas na to, co ważne.
+          </p>
         </div>
       </section>
 
