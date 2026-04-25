@@ -18,6 +18,7 @@ export async function GET(request: Request) {
         const { data: postsToPublish, error: fetchError } = await supabase
             .from('captions')
             .select(`
+                id,
                 content, 
                 hashtags, 
                 publish_platforms, 
