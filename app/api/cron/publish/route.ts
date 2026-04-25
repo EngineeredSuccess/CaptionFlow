@@ -207,8 +207,13 @@ async function publishToTwitter(content: string, hashtags: string[], accessToken
         });
 
         if (!res.ok) {
-            const errorText = await res.text();
-            console.error('Twitter/X Publish Failed:', errorText);
+            const errorData = await res.json().catch(() => null);
+            console.error('Twitter/X Publish FAILED', {
+                httpStatus: res.status,
+                errorType: errorData?.errors?.[0]?.type || errorData?.error,
+                errorDetail: errorData?.errors?.[0]?.detail || errorData?.error_description,
+                fullResponse: JSON.stringify(errorData),
+            });
             return false;
         }
 
