@@ -2,8 +2,14 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Copy, RefreshCw, Zap, Info, CalendarClock, Sparkles, X, Building2, User } from 'lucide-react';
+import { Loader2, Copy, RefreshCw, Zap, Info, CalendarClock, Sparkles, X, Building2, User, ShieldAlert } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const BANNED_WORDS = [
+  'link in bio', 'giveaway', 'buy now', 'onlyfans', 'sugar daddy', 
+  'cashapp', 'venmo', 'diet pills', 'lose weight fast', 'follow to win', 
+  'tag a friend', 'click the link', 'dm to collab'
+];
 
 interface CaptionResult {
   id: string;
@@ -38,9 +44,13 @@ const PLATFORM_LABELS: Record<string, string> = {
 export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll, isLoadingRefetch }: CaptionResultCardProps) {
   const [result, setResult] = useState<CaptionResult>(initialResult);
   
-  // Analysis state
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+
+  // Banned words check
+  const foundBannedWords = BANNED_WORDS.filter(word => 
+    result.content.toLowerCase().includes(word.toLowerCase())
+  );
 
   // Hooks state
   const [isGeneratingHooks, setIsGeneratingHooks] = useState(false);
@@ -272,6 +282,19 @@ export function CaptionResultCard({ initialResult, userTier, tone, onRefreshAll,
         </CardHeader>
         <CardContent className="p-8">
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {foundBannedWords.length > 0 && (
+              <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 rounded-2xl border border-amber-200 dark:border-amber-900/50">
+                <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold text-amber-800 dark:text-amber-500">Shadowban Risk Detected</p>
+                  <p className="text-sm text-amber-700/80 dark:text-amber-600/80 mt-1">
+                    Your caption contains high-risk engagement bait words: <strong className="font-bold">"{foundBannedWords.join('", "')}"</strong>. 
+                    Consider replacing them to protect your account's reach.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-500 rounded-2xl blur opacity-15 group-hover:opacity-25 transition duration-1000"></div>
               <div className="relative p-6 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800">
