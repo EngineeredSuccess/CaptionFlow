@@ -69,7 +69,7 @@ export function CaptionRemixer() {
         const userRes = await fetch('/api/user');
         if (userRes.ok) {
           const userData = await userRes.json();
-          setUserTier(userData.subscription_tier || 'free');
+          setUserTier(userData.user?.subscription_tier || 'free');
         }
       } catch {
         console.error('Failed to fetch remix data');

@@ -1,9 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Dna, Instagram, Linkedin, Twitter, MessageSquare, Quote, Hash } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Dna, Instagram, Linkedin, Twitter, MessageSquare, Quote, Loader2, Sparkles } from 'lucide-react';
 
 interface DNAData {
   tone: string;
@@ -15,12 +19,46 @@ interface DNAData {
 }
 
 interface SocialDNACardProps {
+  connectionId: string;
   platform: string;
   handle: string;
   dna: DNAData;
+  onRefresh?: () => void;
 }
 
-export function SocialDNACard({ platform, handle, dna }: SocialDNACardProps) {
+export function SocialDNACard({ connectionId, platform, handle, dna, onRefresh }: SocialDNACardProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [captionsInput, setCaptionsInput] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const hasDna = dna && dna.tone && dna.tone.length > 0;
+
+  const handleManualSync = async () => {
+    const rawCaptions = captionsInput.split('\n\n').map(c => c.trim()).filter(c => c.length > 10);
+    if (rawCaptions.length === 0) return;
+
+    setIsAnalyzing(true);
+    try {
+      const res = await fetch('/api/social-connections/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          connectionId,
+          captions: rawCaptions.slice(0, 5) // max 5
+        })
+      });
+
+      if (res.ok) {
+        setIsOpen(false);
+        setCaptionsInput('');
+        if (onRefresh) onRefresh();
+      }
+    } catch (err) {
+      console.error('Failed to analyze DNA manually:', err);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
   const getIcon = () => {
     switch (platform) {
       case 'instagram': return <Instagram className="w-5 h-5 text-pink-500" />;
@@ -43,9 +81,48 @@ export function SocialDNACard({ platform, handle, dna }: SocialDNACardProps) {
               <p className="text-sm text-zinc-500 font-medium">{handle}</p>
             </div>
           </div>
-          <Badge variant="outline" className="rounded-full px-4 py-1 border-primary/20 bg-primary/5 text-primary font-bold">
-            Synchronized
-          </Badge>
+          {hasDna ? (
+            <Badge variant="outline" className="rounded-full px-4 py-1 border-primary/20 bg-primary/5 text-primary font-bold">
+              Synchronized
+            </Badge>
+          ) : (
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="rounded-full border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 font-bold">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Sync DNA
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Manual DNA Sync ({platform})</DialogTitle>
+                  <DialogDescription>
+                    Paste 1 to 5 of your recent, most successful {platform} posts, separated by an empty line.
+                    We will extract your tone, vocabulary, and hook style.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <Textarea
+                    placeholder="Paste caption 1 here...&#10;&#10;Paste caption 2 here..."
+                    className="min-h-[200px]"
+                    value={captionsInput}
+                    onChange={(e) => setCaptionsInput(e.target.value)}
+                  />
+                  <Button 
+                    className="w-full font-bold" 
+                    onClick={handleManualSync}
+                    disabled={isAnalyzing || captionsInput.length < 10}
+                  >
+                    {isAnalyzing ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyzing DNA...</>
+                    ) : (
+                      'Analyze & Save DNA'
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </CardHeader>
       

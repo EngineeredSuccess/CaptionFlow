@@ -151,7 +151,7 @@ export default function BrandVoicePage() {
       </div>
 
       {/* Social DNA Section */}
-      {socialConnections.some(conn => conn.profile_dna && Object.keys(conn.profile_dna).length > 0) && (
+      {socialConnections.length > 0 && (
         <div className="mb-16 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
@@ -162,13 +162,14 @@ export default function BrandVoicePage() {
           
           <div className="grid md:grid-cols-2 gap-6">
             {socialConnections
-              .filter(conn => conn.profile_dna && Object.keys(conn.profile_dna).length > 0)
               .map(conn => (
                 <SocialDNACard 
                   key={conn.id}
+                  connectionId={conn.id}
                   platform={conn.platform}
                   handle={conn.platform_handle}
                   dna={conn.profile_dna}
+                  onRefresh={fetchBrandVoice}
                 />
               ))
             }
