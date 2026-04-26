@@ -482,6 +482,16 @@ redirectTo: `${window.location.origin}/api/auth/callback`
 **Solution**: Built an elegant "Coming Soon" visual state in the SocialConnections component, replacing the Connect button with a dashed border and an explanation badge.
 **Key Learning**: Always manage user expectations visually. An honest "Requires paid API access. Coming soon." builds more trust than a broken button.
 
+### Issue 28: API Scopes & Manual Fallbacks (LinkedIn DNA)
+**Problem**: The LinkedIn API only granted write scopes (`w_member_social`) but denied read scopes for historical posts. This resulted in empty "Brand Voice DNA" because the automated scraping during OAuth failed.
+**Solution**: Instead of abandoning the feature for LinkedIn, we built a "Manual Sync" UI. If DNA is missing, users see a "Sync DNA" button that opens a dialog to paste 1-5 recent posts. We then send this to a new `/api/social-connections/analyze` endpoint.
+**Key Learning**: Never let third-party API limitations block core app value. Always provide a manual fallback path (like copy-pasting data) for users who want to use the feature.
+
+### Issue 29: Feature Gating UX & Component Lifecycle
+**Problem**: The "Human Mode" (Pro feature) toggle was initially hidden for Pro users until they generated their *first* caption, because the `userTier` state was only updated using the API response from the generation endpoint.
+**Solution**: Added a `useEffect` hook to explicitly fetch `/api/user` on component mount, ensuring feature gates are evaluated immediately.
+**Key Learning**: Do not rely on action-triggered API responses to determine global UI state (like feature flags or premium access). Fetch user entitlements independently on initial mount.
+
 ---
 
 ## Conclusion
