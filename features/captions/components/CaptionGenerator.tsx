@@ -53,6 +53,8 @@ export function CaptionGenerator() {
   const [error, setError] = useState<string | null>(null);
   const [remainingToday, setRemainingToday] = useState<number | null>(null);
   const [userTier, setUserTier] = useState<string>('free');
+  const [useHumanMode, setUseHumanMode] = useState(false);
+  const [activeModel, setActiveModel] = useState<'gpt-4o' | 'claude'>('gpt-4o');
 
   // Vision state
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -165,6 +167,7 @@ export function CaptionGenerator() {
           tone,
           platform: selectedPlatforms,
           numHashtags: 10,
+          useHumanMode,
         };
 
       const response = await fetch(endpoint, {
@@ -187,6 +190,7 @@ export function CaptionGenerator() {
       
       setRemainingToday(data.remainingToday);
       if (data.tier) setUserTier(data.tier);
+      if (data.model) setActiveModel(data.model);
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -200,7 +204,7 @@ export function CaptionGenerator() {
       <div className="mb-12 space-y-4">
         <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-bold tracking-tight">
           <Sparkles className="w-4 h-4" />
-          Powered by GPT-4o
+          {activeModel === 'claude' ? '✨ Human Mode — Claude Sonnet' : 'Powered by GPT-4o'}
         </div>
         <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">Caption Generator</h1>
         <p className="text-lg text-zinc-500 max-w-2xl leading-relaxed">Create engaging social media captions in seconds. Tailored to your brand DNA.</p>
@@ -367,6 +371,31 @@ export function CaptionGenerator() {
                 })}
               </div>
             </div>
+
+            {/* Human Mode Toggle — Pro only */}
+            {(userTier === 'pro' || userTier === 'team') && (
+              <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                      ✨ Human Mode
+                      <span className="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Pro</span>
+                    </p>
+                    <p className="text-xs text-zinc-500 mt-0.5">Uses Claude Sonnet — writes more like a real person</p>
+                  </div>
+                  <button
+                    onClick={() => setUseHumanMode(v => !v)}
+                    className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
+                      useHumanMode ? 'bg-primary' : 'bg-zinc-300 dark:bg-zinc-600'
+                    }`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                      useHumanMode ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Generate Button */}
             <Button
