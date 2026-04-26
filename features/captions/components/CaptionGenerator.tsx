@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -62,6 +62,21 @@ export function CaptionGenerator() {
   const [imageMimeType, setImageMimeType] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    async function fetchUserTier() {
+      try {
+        const res = await fetch('/api/user');
+        if (res.ok) {
+          const data = await res.json();
+          setUserTier(data.user?.subscription_tier || 'free');
+        }
+      } catch (err) {
+        console.error('Failed to fetch user tier:', err);
+      }
+    }
+    fetchUserTier();
+  }, []);
 
   const togglePlatform = (platform: string) => {
     setSelectedPlatforms(prev =>
