@@ -38,6 +38,8 @@ const PLATFORMS = [
         textColor: 'text-pink-600 dark:text-pink-400',
         borderColor: 'border-pink-200 dark:border-pink-800',
         description: 'Share photos, reels & stories',
+        comingSoon: false,
+        comingSoonReason: '',
     },
     {
         id: 'linkedin',
@@ -49,6 +51,8 @@ const PLATFORMS = [
         textColor: 'text-blue-600 dark:text-blue-400',
         borderColor: 'border-blue-200 dark:border-blue-800',
         description: 'Professional networking & articles',
+        comingSoon: false,
+        comingSoonReason: '',
     },
     {
         id: 'twitter',
@@ -60,6 +64,8 @@ const PLATFORMS = [
         textColor: 'text-zinc-700 dark:text-zinc-300',
         borderColor: 'border-zinc-200 dark:border-zinc-700',
         description: 'Tweets, threads & engagement',
+        comingSoon: true,
+        comingSoonReason: 'Requires paid API access. Coming soon.',
     },
     {
         id: 'tiktok',
@@ -71,8 +77,11 @@ const PLATFORMS = [
         textColor: 'text-cyan-600 dark:text-cyan-400',
         borderColor: 'border-cyan-200 dark:border-cyan-800',
         description: 'Short videos & trends',
+        comingSoon: true,
+        comingSoonReason: 'App review in progress. Coming soon.',
     },
 ];
+
 
 export function SocialConnections() {
     const [connections, setConnections] = useState<SocialConnection[]>([]);
@@ -225,38 +234,52 @@ export function SocialConnections() {
                         const Icon = platform.icon;
                         const isConnecting = connectingPlatform === platform.id;
                         const isDisconnecting = disconnecting === connection?.id;
+                        const isComingSoon = platform.comingSoon;
 
                         return (
                             <div
                                 key={platform.id}
-                                className={`relative group p-5 rounded-2xl border transition-all duration-300 ${connection
+                                className={`relative group p-5 rounded-2xl border transition-all duration-300 ${
+                                    isComingSoon
+                                        ? 'bg-zinc-50/50 dark:bg-zinc-800/20 border-zinc-200/60 dark:border-zinc-700/50 opacity-70'
+                                        : connection
                                         ? `${platform.bgLight} ${platform.bgDark} ${platform.borderColor}`
                                         : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 hover:border-primary/30'
-                                    }`}
+                                }`}
                             >
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`p-2.5 rounded-xl bg-gradient-to-br ${platform.gradient} text-white shadow-lg`}>
-                                            <Icon className="w-5 h-5" />
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2.5 rounded-xl bg-gradient-to-br ${platform.gradient} text-white shadow-lg ${isComingSoon ? 'grayscale' : ''}`}>
+                                                <Icon className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                                                    {platform.name}
+                                                    {isComingSoon && (
+                                                        <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700 font-bold uppercase tracking-wider">
+                                                            Soon
+                                                        </Badge>
+                                                    )}
+                                                </p>
+                                                <p className="text-xs text-zinc-400 mt-0.5">
+                                                    {isComingSoon ? platform.comingSoonReason : platform.description}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
-                                                {platform.name}
-                                            </p>
-                                            <p className="text-xs text-zinc-400 mt-0.5">
-                                                {platform.description}
-                                            </p>
-                                        </div>
+                                        {connection && (
+                                            <Badge variant="outline" className="text-xs bg-white/80 dark:bg-zinc-900/50 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 font-bold">
+                                                <CheckCircle2 className="w-3 h-3 mr-1" />
+                                                Live
+                                            </Badge>
+                                        )}
                                     </div>
-                                    {connection && (
-                                        <Badge variant="outline" className="text-xs bg-white/80 dark:bg-zinc-900/50 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 font-bold">
-                                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                                            Live
-                                        </Badge>
-                                    )}
-                                </div>
 
-                                {connection ? (
+                                {isComingSoon ? (
+                                    <div className="mt-2 w-full h-10 rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-600 flex items-center justify-center gap-2 text-xs font-bold text-zinc-400 dark:text-zinc-500">
+                                        <span>🔒</span>
+                                        <span>Coming Soon</span>
+                                    </div>
+                                ) : connection ? (
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2">
                                             <span className={`text-sm font-semibold ${platform.textColor}`}>
