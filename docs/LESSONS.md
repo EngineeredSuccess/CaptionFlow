@@ -458,6 +458,32 @@ redirectTo: `${window.location.origin}/api/auth/callback`
 
 ---
 
+## AI Pipeline & Feature Scoping
+
+### Issue 24: Model Routing (GPT-4o vs Claude)
+**Problem**: Generating human-like captions consistently is difficult; GPT-4 often sounds repetitive and uses AI filler phrases.
+**Solution**: Implemented a dual-model architecture.
+1. **GPT-4o**: Handles fast, structured generation (JSON) and serves free tier users.
+2. **Claude 3.5 Sonnet**: Excels at human-like writing. Exposed as "Human Mode" strictly for Pro users.
+**Key Learning**: Mixing models based on their strengths (GPT for structure/analysis, Claude for voice) provides the best user experience while managing API costs effectively.
+
+### Issue 25: Scraping Limits vs User Experience (One-Click Remix)
+**Problem**: Trying to scrape Instagram/TikTok URLs to "Remix" content leads to constant API blocks and IP bans from Meta/ByteDance.
+**Solution**: Pivoted the feature to a manual copy-paste "Source Content" area.
+**Key Learning**: Sometimes a slightly more manual UX (copy-paste) is better than a fragile automation (scraping) that breaks 50% of the time.
+
+### Issue 26: Shadowban Prevention (Banned Word Shield)
+**Problem**: Users need protection against engagement bait words that trigger algorithm suppression, but checking in real-time during AI generation is complex.
+**Solution**: Implemented a fast post-generation check. If the generated text contains high-risk words (e.g., "link in bio"), a prominent alert is displayed above the result.
+**Key Learning**: "Account Insurance" can be framed as a value-add feature. Post-generation validation is much easier to implement and maintain than pre-generation constraints.
+
+### Issue 27: Managing Platform API Constraints (Twitter & TikTok)
+**Problem**: Twitter's free API limits posting to 0, and TikTok's API requires a lengthy App Review process. Users clicking "Connect" would hit 403 errors.
+**Solution**: Built an elegant "Coming Soon" visual state in the SocialConnections component, replacing the Connect button with a dashed border and an explanation badge.
+**Key Learning**: Always manage user expectations visually. An honest "Requires paid API access. Coming soon." builds more trust than a broken button.
+
+---
+
 ## Conclusion
 The main challenges were:
 1. **Understanding Supabase auth vs database clients** - Critical distinction
@@ -465,5 +491,6 @@ The main challenges were:
 3. **Drafting a scalable CI/CD strategy** - Moving from "push to deploy" to "verify then deploy".
 4. **Designing for 'premium'** - Small details like fonts (Outfit) and shadows make a huge difference.
 5. **Hobby Tier Resourcefulness** - Using external crons and branch syncing to bypass hosting platform limitations.
+6. **AI Architecture** - Hybrid model approaches (GPT + Claude) and smart fallbacks.
 
 Always test on staging before hitting production!
