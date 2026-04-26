@@ -53,19 +53,19 @@ export function SocialDNACard({ platform, handle, dna }: SocialDNACardProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800">
             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Tone Bias</p>
-            <p className="font-bold text-zinc-900 dark:text-zinc-100">{dna.tone}</p>
+            <p className="font-bold text-zinc-900 dark:text-zinc-100">{dna.tone || 'Pending analysis...'}</p>
           </div>
           <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800">
             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Hook Style</p>
-            <p className="font-bold text-zinc-900 dark:text-zinc-100">{dna.hookStyle}</p>
+            <p className="font-bold text-zinc-900 dark:text-zinc-100">{dna.hookStyle || 'Pending analysis...'}</p>
           </div>
           <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800">
             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Emoji usage</p>
-            <p className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">{dna.emojiPattern}</p>
+            <p className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">{dna.emojiPattern || 'Pending analysis...'}</p>
           </div>
           <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800">
             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Vocab Level</p>
-            <p className="font-bold text-zinc-900 dark:text-zinc-100">{dna.vocabularyLevel}</p>
+            <p className="font-bold text-zinc-900 dark:text-zinc-100">{dna.vocabularyLevel || 'Pending analysis...'}</p>
           </div>
         </div>
 
