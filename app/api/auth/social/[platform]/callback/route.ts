@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import OpenAI from 'openai';
+import { cookies } from 'next/headers';
+import { encrypt } from '@/shared/lib/encryption';
+
 
 // OAuth token URLs for each platform
 const TOKEN_URLS: Record<string, string> = {
@@ -74,23 +76,25 @@ async function fetchPlatformProfile(platform: string, accessToken: string): Prom
                 if (orgData.elements && orgData.elements.length > 0) {
                     const orgUrns = orgData.elements.map((el: any) => el.organization);
                     console.log('LinkedIn Found Org URNs:', orgUrns);
-                    
-                    const orgsList = [];
-                    for (const urn of orgUrns) {
-                        const id = urn.split(':').pop();
-                        const detailsRes = await fetch(`https://api.linkedin.com/v2/organizations/${id}`, {
-                            headers: { Authorization: `Bearer ${accessToken}` },
-                        });
-                        const detailsData = await detailsRes.json();
-                        if (detailsData.localizedName || detailsData.vanityName) {
-                            orgsList.push({
-                                id: urn,
-                                name: detailsData.localizedName || detailsData.vanityName || 'LinkedIn Page'
-                            });
-                        }
-                    }
-                    
-                    organizations = orgsList;
+
+                    const orgDetails = await Promise.all(
+                        orgUrns.map(async (urn: string) => {
+                            const id = urn.split(':').pop();
+                            try {
+                                const detailsRes = await fetch(`https://api.linkedin.com/v2/organizations/${id}`, {
+                                    headers: { Authorization: `Bearer ${accessToken}` },
+                                });
+                                const detailsData = await detailsRes.json();
+                                if (detailsData.localizedName || detailsData.vanityName) {
+                                    return { id: urn, name: detailsData.localizedName || detailsData.vanityName || 'LinkedIn Page' };
+                                }
+                            } catch {
+                                // silently skip failed org fetches
+                            }
+                            return null;
+                        })
+                    );
+                    organizations = orgDetails.filter((o): o is { id: string; name: string } => o !== null);
                     console.log('LinkedIn Parsed Organizations:', organizations);
                 } else {
                     console.log('LinkedIn: No organizations found for this user.');
@@ -182,6 +186,14 @@ export async function GET(
             return NextResponse.redirect(new URL('/settings?social_error=missing_code', request.url));
         }
 
+        // Validate state against cookie (M1)
+        const cookieStore = await cookies();
+        const storedState = cookieStore.get('oauth_state')?.value;
+        if (!storedState || storedState !== stateParam) {
+            console.error('State mismatch or missing:', { storedState, stateParam });
+            return NextResponse.redirect(new URL('/settings?social_error=invalid_state', request.url));
+        }
+
         // Decode and validate state
         let state: { userId: string; platform: string; timestamp: number };
         try {
@@ -235,11 +247,16 @@ export async function GET(
             });
             headers['Content-Type'] = 'application/x-www-form-urlencoded';
         } else if (platform === 'twitter') {
+            const cookieStore = await cookies();
+            const pkceVerifier = cookieStore.get('twitter_pkce_verifier')?.value;
+            if (!pkceVerifier) {
+                return NextResponse.redirect(new URL('/settings?social_error=pkce_missing', request.url));
+            }
             tokenBody = new URLSearchParams({
                 code,
                 grant_type: 'authorization_code',
                 redirect_uri: redirectUri,
-                code_verifier: 'challenge',
+                code_verifier: pkceVerifier,
             });
             headers['Content-Type'] = 'application/x-www-form-urlencoded';
             headers['Authorization'] = `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`;
@@ -282,38 +299,12 @@ export async function GET(
             return NextResponse.redirect(new URL('/settings?social_error=no_ig_account', request.url));
         }
 
-        // Extract Profile DNA if we have recent captions
+        // Store raw captions for user-initiated DNA sync (see /api/social-connections/analyze).
+        // AI analysis is NOT done here to avoid latency and cost on every OAuth connection.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let profile_dna: any = {};
-        if (recentCaptions.length > 0) {
-            try {
-                const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-                const prompt = `Analyze these recent social media captions and extract the user's "Profile DNA" to help an AI write like them in the future.
-Return a JSON object with EXACTLY these string keys:
-- "tone" (e.g., casual, professional, enthusiastic)
-- "emojiPattern" (e.g., end of sentences, heavy usage, none)
-- "hookStyle" (e.g., questions, bold statements)
-- "vocabularyLevel" (e.g., simple, industry-jargon)
-- "averageLength" (e.g., short, medium, long)
-
-Captions:
-${recentCaptions.map((c, i) => `[${i+1}] ${c}`).join('\n\n')}`;
-
-                const aiResponse = await openai.chat.completions.create({
-                    model: 'gpt-4o-mini',
-                    messages: [{ role: 'user', content: prompt }],
-                    response_format: { type: 'json_object' },
-                    temperature: 0.2,
-                });
-
-                if (aiResponse.choices[0].message.content) {
-                    profile_dna = JSON.parse(aiResponse.choices[0].message.content);
-                    profile_dna.source_captions = recentCaptions; // Store the original text samples
-                }
-            } catch (err) {
-                console.error('Failed to extract DNA:', err);
-            }
-        }
+        const profile_dna: any = recentCaptions.length > 0
+            ? { source_captions: recentCaptions, analyzed: false }
+            : {};
 
         // Add organizations to profile_dna if they exist
         if (organizations && organizations.length > 0) {
@@ -333,8 +324,8 @@ ${recentCaptions.map((c, i) => `[${i+1}] ${c}`).join('\n\n')}`;
                 platform,
                 platform_handle: handle,
                 platform_user_id: platformUserId,
-                access_token: accessToken,
-                refresh_token: refreshToken,
+                access_token: encrypt(accessToken),
+                refresh_token: refreshToken ? encrypt(refreshToken) : null,
                 token_expires_at: tokenExpiresAt,
                 profile_dna,
                 connected_at: new Date().toISOString(),
@@ -343,6 +334,7 @@ ${recentCaptions.map((c, i) => `[${i+1}] ${c}`).join('\n\n')}`;
                 onConflict: 'user_id,platform',
             });
 
+
         if (upsertError) {
             console.error('Failed to save connection:', upsertError);
             const errorMsg = encodeURIComponent(upsertError.message || 'database_error');
@@ -350,7 +342,18 @@ ${recentCaptions.map((c, i) => `[${i+1}] ${c}`).join('\n\n')}`;
         }
 
         console.log('Successfully connected:', platform, handle);
-        return NextResponse.redirect(new URL(`/settings?social_connected=${platform}`, request.url));
+        const successResponse = NextResponse.redirect(new URL(`/settings?social_connected=${platform}`, request.url));
+        
+        // Clear security cookies (M1, H2)
+        successResponse.cookies.set('oauth_state', '', { maxAge: 0, path: `/api/auth/social/${platform}/callback` });
+        if (platform === 'twitter') {
+            successResponse.cookies.set('twitter_pkce_verifier', '', {
+                maxAge: 0,
+                path: '/api/auth/social/twitter/callback',
+            });
+        }
+        return successResponse;
+
     } catch (error) {
         console.error('OAuth callback error:', error);
         return NextResponse.redirect(new URL('/settings?social_error=unknown', request.url));

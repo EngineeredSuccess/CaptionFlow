@@ -59,14 +59,20 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const supabase = await createClient();
-    
-    // Check if user is admin
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
 
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data: userData } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single();
+
+    if (!userData?.is_admin) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { data: signups, error } = await supabase

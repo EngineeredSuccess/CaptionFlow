@@ -14,8 +14,9 @@ export async function GET() {
 
     const { data: captions, error } = await supabase
       .from('captions')
-      .select('*')
+      .select('id, content, hashtags, platform, tone, created_at, media_url, scheduled_at, scheduled_status')
       .eq('user_id', user.id)
+
       .order('created_at', { ascending: false });
 
     if (error) {

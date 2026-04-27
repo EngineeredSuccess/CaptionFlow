@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/shared/lib/supabase/server';
+import { checkRateLimit } from '@/shared/lib/rate-limiter';
 import OpenAI from 'openai';
 import { z } from 'zod';
 
@@ -20,13 +21,31 @@ const requestSchema = z.object({
 
 export async function POST(request: Request) {
     try {
+        // Early Content-Length check (L1 - Security Remediation)
+        const contentLength = request.headers.get('content-length');
+        if (contentLength && parseInt(contentLength) > MAX_IMAGE_SIZE * 1.5) {
+            return NextResponse.json(
+                { error: 'Request too large. Maximum image size is 4MB.' },
+                { status: 413 }
+            );
+        }
+
         const supabase = await createClient();
+
         const {
             data: { user },
         } = await supabase.auth.getUser();
 
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const rateLimit = await checkRateLimit(user.id, 'captionGeneration');
+        if (!rateLimit.success) {
+            return NextResponse.json(
+                { error: 'Too many requests. Please wait before generating more captions.' },
+                { status: 429, headers: { 'Retry-After': String(Math.ceil((rateLimit.reset - Date.now()) / 1000)) } }
+            );
         }
 
         const body = await request.json();

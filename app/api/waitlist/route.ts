@@ -8,11 +8,12 @@ const waitlistSchema = z.object({
     platform: z.string().min(1),
 });
 
-// Since this is a public endpoint for non-authenticated users, 
-// we use the service role key to insert into a specific table.
-const supabaseAdmin = createClient(
+// Public anon client — RLS policy "allow_public_waitlist_insert" handles insert permission.
+// Run in Supabase SQL Editor:
+//   CREATE POLICY "allow_public_waitlist_insert" ON waitlist FOR INSERT TO anon WITH CHECK (true);
+const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 export async function POST(request: Request) {
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
         const validatedData = waitlistSchema.parse(body);
 
         // Insert into waitlist table
-        const { error } = await supabaseAdmin
+        const { error } = await supabase
             .from('waitlist')
             .insert([
                 {

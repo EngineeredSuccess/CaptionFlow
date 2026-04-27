@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/shared/lib/supabase/server';
+import { checkRateLimit } from '@/shared/lib/rate-limiter';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
@@ -30,6 +31,14 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const rateLimit = await checkRateLimit(user.id, 'captionGeneration');
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please wait before generating more captions.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rateLimit.reset - Date.now()) / 1000)) } }
+      );
     }
 
     const body = await request.json();

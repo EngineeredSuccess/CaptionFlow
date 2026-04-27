@@ -27,7 +27,7 @@ export default function DashboardPage() {
       try {
         const { data, error } = await supabase
           .from('captions')
-          .select('*')
+          .select('id, content, hashtags, platform, tone, created_at')
           .order('created_at', { ascending: false });
 
         if (error) throw error;

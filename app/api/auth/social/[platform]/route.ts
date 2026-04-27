@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/shared/lib/supabase/server';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,13 +97,39 @@ export async function GET(
             authParams.set('client_key', clientId);
         }
 
+        let twitterCodeVerifier: string | undefined;
         if (platform === 'twitter') {
-            authParams.set('code_challenge', 'challenge');
-            authParams.set('code_challenge_method', 'plain');
+            twitterCodeVerifier = crypto.randomBytes(32).toString('base64url');
+            const codeChallenge = crypto
+                .createHash('sha256')
+                .update(twitterCodeVerifier)
+                .digest('base64url');
+            authParams.set('code_challenge', codeChallenge);
+            authParams.set('code_challenge_method', 'S256');
         }
 
         const redirectResponse = NextResponse.redirect(`${config.authUrl}?${authParams.toString()}`);
         redirectResponse.headers.set('Cache-Control', 'no-store, max-age=0');
+
+        // Store state in cookie for validation in callback (M1)
+        redirectResponse.cookies.set('oauth_state', state, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 600, // 10 minutes
+            path: `/api/auth/social/${platform}/callback`,
+        });
+
+        if (twitterCodeVerifier) {
+            redirectResponse.cookies.set('twitter_pkce_verifier', twitterCodeVerifier, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 600,
+                path: '/api/auth/social/twitter/callback',
+            });
+        }
+
         return redirectResponse;
     } catch (error) {
         console.error('OAuth init error:', error);

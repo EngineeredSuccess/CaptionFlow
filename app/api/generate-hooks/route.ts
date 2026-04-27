@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/shared/lib/supabase/server';
+import { checkRateLimit } from '@/shared/lib/rate-limiter';
 import OpenAI from 'openai';
 import { z } from 'zod';
 
@@ -8,7 +9,7 @@ const openai = new OpenAI({
 });
 
 const requestSchema = z.object({
-    content: z.string().min(5),
+    content: z.string().min(5).max(5000),
     platform: z.string().optional().default('instagram'),
 });
 
@@ -21,6 +22,14 @@ export async function POST(request: Request) {
 
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const rateLimit = await checkRateLimit(user.id, 'api');
+        if (!rateLimit.success) {
+            return NextResponse.json(
+                { error: 'Too many requests. Please wait a moment.' },
+                { status: 429, headers: { 'Retry-After': String(Math.ceil((rateLimit.reset - Date.now()) / 1000)) } }
+            );
         }
 
         const body = await request.json();

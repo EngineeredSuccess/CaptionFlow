@@ -77,7 +77,7 @@ export async function POST(request: Request) {
         if (updateError) {
             console.error('Error scheduling caption:', updateError);
             return NextResponse.json(
-                { error: `Failed to schedule: ${updateError.message || updateError.details || 'Unknown DB error'}` },
+                { error: 'Failed to schedule post. Please try again.' },
                 { status: 500 }
             );
         }

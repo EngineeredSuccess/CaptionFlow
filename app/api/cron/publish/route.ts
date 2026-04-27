@@ -1,14 +1,31 @@
 import { NextResponse } from 'next/server';
+import { timingSafeEqual } from 'crypto';
 import { createServiceRoleClient } from '@/shared/lib/supabase/service-role';
+import { decrypt, encrypt } from '@/shared/lib/encryption';
+
 
 // Opt out of caching
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
     try {
-        // 1. Verify Vercel Cron Secret for security
-        const authHeader = request.headers.get('authorization');
-        if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        // 1. Verify Cron Secret using timing-safe comparison
+        const cronSecret = process.env.CRON_SECRET;
+        if (!cronSecret) {
+            console.error('CRON_SECRET environment variable is not set');
+            return new NextResponse('Unauthorized', { status: 401 });
+        }
+
+        const authHeader = request.headers.get('authorization') ?? '';
+        const expected = `Bearer ${cronSecret}`;
+        let authorized = false;
+        try {
+            authorized = timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected));
+        } catch {
+            authorized = false;
+        }
+
+        if (!authorized) {
             return new NextResponse('Unauthorized', { status: 401 });
         }
 
@@ -39,7 +56,10 @@ export async function GET(request: Request) {
 
         for (const post of postsToPublish) {
             try {
-                // 3. Validate user subscription tier
+                // 3. Set status to 'processing' to prevent double-processing (M7 - Security Remediation)
+                await updatePostStatus(supabase, post.id, 'processing');
+
+                // 4. Validate user subscription tier
                 const { data: userData } = await supabase
                     .from('users')
                     .select('subscription_tier')
@@ -51,6 +71,7 @@ export async function GET(request: Request) {
                     await updatePostStatus(supabase, post.id, 'failed_api_error');
                     continue;
                 }
+
 
                 // 4. Fetch User Social Connections
                 const platforms = post.publish_platforms as string[];
@@ -72,11 +93,13 @@ export async function GET(request: Request) {
 
                 // 5. Attempt Publishing per platform
                 for (const connection of connections) {
+                    const decryptedAccessToken = decrypt(connection.access_token);
+
                     if (connection.platform === 'linkedin') {
                         const success = await publishToLinkedIn(
                             post.content, 
                             post.hashtags, 
-                            connection.access_token, 
+                            decryptedAccessToken, 
                             post.publish_target_id || connection.target_id || connection.platform_user_id
                         );
                         
@@ -90,7 +113,7 @@ export async function GET(request: Request) {
                         const success = await publishToTikTok(
                             post.content,
                             post.media_url,
-                            connection.access_token
+                            decryptedAccessToken
                         );
                         if (success) atLeastOneSuccess = true;
                     }
@@ -109,7 +132,7 @@ export async function GET(request: Request) {
                             post.content,
                             post.hashtags,
                             post.media_url,
-                            connection.access_token,
+                            decryptedAccessToken,
                             connection.platform_user_id
                         );
                         if (success) atLeastOneSuccess = true;
@@ -118,6 +141,7 @@ export async function GET(request: Request) {
                         console.log(`Cron: Native publishing for ${connection.platform} is pending support.`);
                     }
                 }
+
 
                 // 6. Update Status
                 if (atLeastOneSuccess) {
@@ -143,9 +167,10 @@ export async function GET(request: Request) {
 
 // --- Helpers ---
 
-async function updatePostStatus(supabase: any, postId: string, status: 'published' | 'failed_api_error') {
+async function updatePostStatus(supabase: any, postId: string, status: 'published' | 'failed_api_error' | 'processing' | 'scheduled') {
     await supabase.from('captions').update({ scheduled_status: status }).eq('id', postId);
 }
+
 
 async function publishToTikTok(title: string, videoUrl: string, accessToken: string) {
     try {
@@ -224,17 +249,18 @@ async function refreshTwitterToken(connection: any, supabase: any): Promise<stri
             ? new Date(Date.now() + expiresIn * 1000).toISOString()
             : null;
 
-        // Persist the new tokens to the DB
+        // Persist the new tokens to the DB (M2 - Security Remediation)
         await supabase
             .from('social_connections')
             .update({
-                access_token: newAccessToken,
-                refresh_token: newRefreshToken,
+                access_token: encrypt(newAccessToken),
+                refresh_token: newRefreshToken ? encrypt(newRefreshToken) : null,
                 token_expires_at: tokenExpiresAt,
                 updated_at: new Date().toISOString(),
             })
             .eq('user_id', connection.user_id)
             .eq('platform', 'twitter');
+
 
         console.log('Twitter: Token refreshed successfully.');
         return newAccessToken;
@@ -262,7 +288,8 @@ async function publishToTwitter(content: string, hashtags: string[], connection:
             body: JSON.stringify({ text: fullText }),
         });
 
-        let res = await tryPost(connection.access_token);
+        const decryptedAccessToken = decrypt(connection.access_token);
+        let res = await tryPost(decryptedAccessToken);
 
         // Auto-refresh on 401 and retry once
         if (res.status === 401) {
@@ -271,6 +298,7 @@ async function publishToTwitter(content: string, hashtags: string[], connection:
             if (!newToken) return false;
             res = await tryPost(newToken);
         }
+
 
         if (!res.ok) {
             const errorData = await res.json().catch(() => null);
