@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, Clock, ImagePlus, X, Type, Camera, RefreshCw } from 'lucide-react';
+import { Loader2, Sparkles, Clock, ImagePlus, X, Type, Camera, RefreshCw, Globe } from 'lucide-react';
 import { CaptionResultCard } from './CaptionResultCard';
 
 const TONES = [
@@ -28,6 +28,18 @@ const PLATFORMS = [
   { value: 'tiktok', label: '🎵 TikTok' },
   { value: 'linkedin', label: '💼 LinkedIn' },
   { value: 'twitter', label: '🐦 Twitter/X' },
+];
+
+const LANGUAGES = [
+  { value: 'auto', label: '✨ Auto-detect', description: 'Match prompt language' },
+  { value: 'English', label: '🇺🇸 English', description: '' },
+  { value: 'Polish', label: '🇵🇱 Polish', description: 'Polski' },
+  { value: 'Spanish', label: '🇪🇸 Spanish', description: 'Español' },
+  { value: 'German', label: '🇩🇪 German', description: 'Deutsch' },
+  { value: 'French', label: '🇫🇷 French', description: 'Français' },
+  { value: 'Portuguese', label: '🇧🇷 Portuguese', description: 'Português' },
+  { value: 'Italian', label: '🇮🇹 Italian', description: 'Italiano' },
+  { value: 'Dutch', label: '🇳🇱 Dutch', description: 'Nederlands' },
 ];
 
 type InputMode = 'text' | 'vision';
@@ -55,6 +67,7 @@ export function CaptionGenerator() {
   const [userTier, setUserTier] = useState<string>('free');
   const [useHumanMode, setUseHumanMode] = useState(false);
   const [activeModel, setActiveModel] = useState<'gpt-4o' | 'claude'>('gpt-4o');
+  const [language, setLanguage] = useState('auto');
 
   // Vision state
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -176,6 +189,7 @@ export function CaptionGenerator() {
           tone,
           platform: selectedPlatforms,
           numHashtags: 10,
+          language,
         }
         : {
           description,
@@ -183,6 +197,7 @@ export function CaptionGenerator() {
           platform: selectedPlatforms,
           numHashtags: 10,
           useHumanMode,
+          language,
         };
 
       const response = await fetch(endpoint, {
@@ -357,6 +372,29 @@ export function CaptionGenerator() {
                       <div className="flex flex-col gap-0.5">
                         <span className="font-bold">{t.label}</span>
                         <span className="text-xs text-zinc-500">{t.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Language Selection */}
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                <Globe className="w-3.5 h-3.5" />
+                Caption Language
+              </label>
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger className="h-14 rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 font-medium">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-zinc-200 dark:border-zinc-800 p-2 shadow-2xl">
+                  {LANGUAGES.map(l => (
+                    <SelectItem key={l.value} value={l.value} className="rounded-xl py-3 focus:bg-primary/5 transition-colors cursor-pointer">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-bold">{l.label}</span>
+                        {l.description && <span className="text-xs text-zinc-500">{l.description}</span>}
                       </div>
                     </SelectItem>
                   ))}

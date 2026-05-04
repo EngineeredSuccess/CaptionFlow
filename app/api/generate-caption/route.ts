@@ -20,6 +20,7 @@ const requestSchema = z.object({
   brandVoiceId: z.string().uuid().optional(),
   numHashtags: z.number().min(5).max(15).default(10),
   useHumanMode: z.boolean().optional().default(false),
+  language: z.string().optional().default('auto'),
 });
 
 export async function POST(request: Request) {
@@ -81,6 +82,11 @@ export async function POST(request: Request) {
     const useClaudeWriter = isPaidUser && validatedData.useHumanMode;
 
     // Build system prompt
+    // Build language instruction
+    const languageInstruction = validatedData.language === 'auto'
+      ? `\n\nCRITICAL LANGUAGE RULE: You MUST write ALL captions in the EXACT SAME language as the user's description/prompt below. If the user writes in Polish, respond in Polish. If in Spanish, respond in Spanish. Match the prompt language precisely. Do NOT default to English unless the prompt is in English.`
+      : `\n\nCRITICAL LANGUAGE RULE: You MUST write ALL captions in ${validatedData.language}. Every word of the caption content must be in ${validatedData.language}. Hashtags may remain in English for discoverability.`;
+
     let systemPrompt = `You are an expert social media caption writer. Write engaging, authentic captions that don't sound like generic AI-generated content.
 
 Tone: ${validatedData.tone}
@@ -102,7 +108,7 @@ ${validatedData.platform
             return '';
         }
       })
-      .join('\n')}`;
+      .join('\n')}${languageInstruction}`;
 
     // Add brand voice if provided
     if (validatedData.brandVoiceId) {

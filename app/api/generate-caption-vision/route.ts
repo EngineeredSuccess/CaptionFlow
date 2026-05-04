@@ -17,6 +17,7 @@ const requestSchema = z.object({
     platform: z.array(z.enum(['instagram', 'tiktok', 'linkedin', 'twitter'])),
     brandVoiceId: z.string().uuid().optional(),
     numHashtags: z.number().min(5).max(15).default(10),
+    language: z.string().optional().default('auto'),
 });
 
 export async function POST(request: Request) {
@@ -93,6 +94,11 @@ export async function POST(request: Request) {
             );
         }
 
+        // Build language instruction
+        const languageInstruction = validatedData.language === 'auto'
+            ? '' // For vision mode with no text prompt, default behavior is English
+            : `\n\nCRITICAL LANGUAGE RULE: You MUST write ALL captions in ${validatedData.language}. Every word of the caption content must be in ${validatedData.language}. Hashtags may remain in English for discoverability.`;
+
         // Build system prompt
         let systemPrompt = `You are an expert social media caption writer. You will be given an image. Analyze the image carefully and generate an engaging, authentic caption based on its visual content. The caption should NOT sound like generic AI output.
 
@@ -115,7 +121,7 @@ ${validatedData.platform
                             return '';
                     }
                 })
-                .join('\n')}`;
+                .join('\n')}${languageInstruction}`;
 
         // Add brand voice if provided
         if (validatedData.brandVoiceId) {

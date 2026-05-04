@@ -171,7 +171,7 @@ CREATE INDEX IF NOT EXISTS idx_social_connections_user_id ON social_connections(
 CREATE INDEX IF NOT EXISTS idx_brand_voices_user_id ON brand_voices(user_id);
 ```
 
-**Status:** [ ] Open
+**Status:** [ ] Open — Use consolidated script: `supabase/migrations/20260427_security_consolidated.sql`
 
 ---
 
