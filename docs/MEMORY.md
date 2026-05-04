@@ -9,7 +9,8 @@
 | Framework     | Next.js 16 (App Router) | Deployed on Vercel |
 | Styling       | Tailwind CSS 4   | with shadcn/ui components |
 | Database      | Supabase (PostgreSQL) | RLS enabled, service role for webhooks |
-| AI            | OpenAI GPT-4o-mini | Text + Vision caption generation |
+| AI            | GPT-4o / Claude 4.5 Sonnet | Text + Vision caption generation |
+| Language      | Multilingual (Auto-detect) | Supports 8+ specific languages |
 | Payments      | Stripe (v20)     | Subscriptions via Checkout Sessions |
 | Email         | Resend           | Transactional emails (welcome, upgrade) |
 | State         | Zustand          | Client-side state management |
@@ -84,4 +85,5 @@
 - **Brand Voice**: Users provide 5 example captions → injected into OpenAI system prompt
 - **Email**: `emailService` singleton in `shared/lib/email.ts` using Resend
 - **Time Snapping**: Scheduler in `CaptionResultCard` snaps time to 5-minute intervals to align with cron execution.
+- **Language Detection**: Default behavior is "Auto-detect", which instructs the AI to match the language of the user's prompt. Users can also manually select a specific target language (EN, PL, ES, DE, FR, IT, PT, NL).
 - **Master Branch Policy**: `master` is now the primary branch for production to align with the environment's legacy setup. Always merge `main` to `master` before pushing to Vercel.
