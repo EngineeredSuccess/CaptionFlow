@@ -8,15 +8,14 @@ const waitlistSchema = z.object({
     platform: z.string().min(1),
 });
 
-// Public anon client — RLS policy "allow_public_waitlist_insert" handles insert permission.
-// Run in Supabase SQL Editor:
-//   CREATE POLICY "allow_public_waitlist_insert" ON waitlist FOR INSERT TO anon WITH CHECK (true);
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 export async function POST(request: Request) {
+    // Public anon client — RLS policy "allow_public_waitlist_insert" handles insert permission.
+    // Run in Supabase SQL Editor:
+    //   CREATE POLICY "allow_public_waitlist_insert" ON waitlist FOR INSERT TO anon WITH CHECK (true);
+    const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
     try {
         const body = await request.json();
 
